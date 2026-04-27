@@ -82,6 +82,41 @@ export type ConversationEngineInput = {
   playbook: QualificationPlaybookDefinition;
 };
 
+export type ConversationEngineOverride = {
+  replyLocale?: EngineLocale;
+  intentResult?: {
+    intent: ConversationIntent;
+    confidence: number;
+  };
+  extractedFields?: ExtractedLeadFields;
+  reply?: string;
+  summary?: string;
+  internalNotes?: string;
+  ai?: ConversationEngineAiMetadata;
+};
+
+export type ConversationEngineAiMetadata = {
+  provider: string;
+  tasks: Array<{
+    task: string;
+    provider: string;
+    promptId: string;
+    promptVersion: string;
+    model?: string;
+    latencyMs: number;
+    success: boolean;
+    error?: string;
+    usage?: {
+      inputTokens?: number;
+      outputTokens?: number;
+      totalTokens?: number;
+      estimatedCostUsd?: number;
+    };
+  }>;
+  usedGeneratedReply: boolean;
+  fallbackReasons: string[];
+};
+
 export type ConversationEngineDecision = {
   intent: ConversationIntent;
   intentConfidence: number;
@@ -106,6 +141,7 @@ export type ConversationEngineDecision = {
   escalationReason?: string;
   summary: string;
   internalNotes: string;
+  ai?: ConversationEngineAiMetadata;
   state: {
     stage:
       | "COLLECTING_DETAILS"

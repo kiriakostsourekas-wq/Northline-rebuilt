@@ -4,6 +4,7 @@ import { resolveReplyLocale } from "@/lib/conversation-engine/language";
 import type {
   ConversationEngineDecision,
   ConversationEngineInput,
+  ConversationEngineOverride,
   ConversationIntent,
   EngineLocale,
   ExtractedLeadFields,
@@ -15,22 +16,27 @@ import type { BusinessContextBundle } from "@/lib/knowledge/types";
 
 export function runConversationEngine(
   input: ConversationEngineInput,
+  override: ConversationEngineOverride = {},
 ): ConversationEngineDecision {
-  const replyLocale = resolveReplyLocale({
-    message: input.latestMessage,
-    defaultLocale: input.workspace.defaultLocale,
-    languageMode: input.workspace.languageMode,
-  });
-  const intentResult = detectIntent(input.latestMessage);
-  const extractedFields = extractLeadFields({
-    message: input.latestMessage,
-    contact: {
-      name: input.lead.name,
-      email: input.lead.email,
-      phone: input.lead.phone,
-    },
-    businessContext: input.businessContext,
-  });
+  const replyLocale =
+    override.replyLocale ??
+    resolveReplyLocale({
+      message: input.latestMessage,
+      defaultLocale: input.workspace.defaultLocale,
+      languageMode: input.workspace.languageMode,
+    });
+  const intentResult = override.intentResult ?? detectIntent(input.latestMessage);
+  const extractedFields =
+    override.extractedFields ??
+    extractLeadFields({
+      message: input.latestMessage,
+      contact: {
+        name: input.lead.name,
+        email: input.lead.email,
+        phone: input.lead.phone,
+      },
+      businessContext: input.businessContext,
+    });
   const mergedLead = mergeLead(input.lead, extractedFields);
   const contextGap = findContextGap(intentResult.intent, input.businessContext);
   const missingFields = collectMissingFields({
@@ -65,18 +71,20 @@ export function runConversationEngine(
   const nextConversationStatus = shouldEscalate
     ? "WAITING_ON_BUSINESS"
     : "WAITING_ON_LEAD";
-  const reply = buildReply({
-    locale: replyLocale,
-    intent: intentResult.intent,
-    shouldFallback,
-    shouldEscalate,
-    escalationReason: escalationReason ?? undefined,
-    contextGap,
-    askedFields,
-    questions: input.playbook.questions,
-    businessContext: input.businessContext,
-    lead: mergedLead,
-  });
+  const reply =
+    override.reply ??
+    buildReply({
+      locale: replyLocale,
+      intent: intentResult.intent,
+      shouldFallback,
+      shouldEscalate,
+      escalationReason: escalationReason ?? undefined,
+      contextGap,
+      askedFields,
+      questions: input.playbook.questions,
+      businessContext: input.businessContext,
+      lead: mergedLead,
+    });
   const confidence = clamp(
     (intentResult.confidence + fieldConfidence(mergedLead, missingFields)) / 2,
     0,
@@ -107,19 +115,24 @@ export function runConversationEngine(
     confidence: round(confidence),
     shouldEscalate,
     escalationReason: escalationReason ?? undefined,
-    summary: buildSummary({
-      intent: intentResult.intent,
-      lead: mergedLead,
-      missingFields,
-      shouldEscalate,
-    }),
-    internalNotes: buildInternalNotes({
-      intent: intentResult.intent,
-      confidence,
-      lead: mergedLead,
-      missingFields,
-      escalationReason: escalationReason ?? undefined,
-    }),
+    summary:
+      override.summary ??
+      buildSummary({
+        intent: intentResult.intent,
+        lead: mergedLead,
+        missingFields,
+        shouldEscalate,
+      }),
+    internalNotes:
+      override.internalNotes ??
+      buildInternalNotes({
+        intent: intentResult.intent,
+        confidence,
+        lead: mergedLead,
+        missingFields,
+        escalationReason: escalationReason ?? undefined,
+      }),
+    ai: override.ai,
     state: {
       stage,
       lastIntent: intentResult.intent,

@@ -1,6 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { sendOutboundMessage } from "@/lib/channels/service";
-import { runConversationEngine } from "@/lib/conversation-engine/engine";
+import { runConversationEngineWithLlm } from "@/lib/conversation-engine/llm-enhanced-engine";
 import type {
   ConversationEngineDecision,
   LeadFieldKey,
@@ -111,7 +111,7 @@ export async function runConversationEngineForInbound(input: {
     },
     items: businessContextItems.map(mapBusinessContextItem),
   });
-  const decision = runConversationEngine({
+  const decision = await runConversationEngineWithLlm({
     workspace: {
       name: conversation.organization.name,
       defaultLocale: conversation.organization.defaultLocale,
@@ -161,7 +161,10 @@ export async function runConversationEngineForInbound(input: {
           ? "WAITING_ON_BUSINESS"
           : decision.nextConversationStatus,
     metadata: {
-      engine: "northline_deterministic_v1",
+      engine: decision.ai
+        ? "northline_llm_orchestrated_v1"
+        : "northline_deterministic_v1",
+      ai: decision.ai,
       intent: decision.intent,
       confidence: decision.confidence,
       missingFields: decision.missingFields,
@@ -262,6 +265,7 @@ async function persistEngineDecision(input: {
           intent: input.decision.intent,
           intentConfidence: input.decision.intentConfidence,
           engineState: input.decision.state,
+          ai: input.decision.ai,
         }),
         qualificationConfidence: Math.round(input.decision.confidence * 100),
         lastQualifiedAt: now,
