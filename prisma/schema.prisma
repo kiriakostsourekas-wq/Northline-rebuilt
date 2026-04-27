@@ -1,0 +1,938 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Locale {
+  EN
+  EL
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum PlanTier {
+  PREVIEW
+  STARTER
+  OPERATOR
+  SCALE
+}
+
+enum BillingStatus {
+  NOT_CONFIGURED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum WorkspaceLanguage {
+  GREEK
+  ENGLISH
+  BILINGUAL
+}
+
+enum OnboardingStep {
+  BUSINESS_BASICS
+  LANGUAGES
+  DESCRIPTION
+  CHANNELS
+  LEAD_FIELDS
+  BOOKING
+  INTEGRATIONS
+  REVIEW
+  COMPLETE
+}
+
+enum ChannelType {
+  WEBSITE_CHAT
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK_MESSENGER
+  TELEGRAM
+  VIBER
+  EMAIL
+  API
+}
+
+enum ChannelStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  DISCONNECTED
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFYING
+  QUALIFIED
+  SALES_READY
+  NURTURE
+  DISQUALIFIED
+  HANDED_OFF
+}
+
+enum ConversationStatus {
+  OPEN
+  WAITING_ON_LEAD
+  WAITING_ON_BUSINESS
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageLanguage {
+  GREEK
+  ENGLISH
+  MIXED
+  GREEKLISH
+  UNKNOWN
+}
+
+enum SenderType {
+  LEAD
+  ASSISTANT
+  HUMAN
+  SYSTEM
+}
+
+enum HandoffStatus {
+  REQUESTED
+  ACCEPTED
+  RESOLVED
+  CANCELLED
+}
+
+enum AiResponderState {
+  ACTIVE
+  PAUSED
+}
+
+enum HandoffEventType {
+  REQUESTED
+  ACCEPTED
+  ASSIGNED
+  NOTE_ADDED
+  RESOLVED
+  CANCELLED
+  AI_PAUSED
+  AI_RESUMED
+}
+
+enum ChannelEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+enum OutboundDeliveryStatus {
+  QUEUED
+  SENT
+  RETRYING
+  FAILED
+  SKIPPED
+}
+
+enum BusinessContextSection {
+  BUSINESS_PROFILE
+  SERVICES
+  PRICING
+  FAQ
+  LOCATIONS
+  OPENING_HOURS
+  QUALIFICATION_RULES
+  BOOKING_RULES
+  ESCALATION_RULES
+  CUSTOM_NOTES
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BookingProvider {
+  LOCAL_MOCK
+  GOOGLE_CALENDAR
+}
+
+enum BookingStatus {
+  REQUESTED
+  SLOT_SUGGESTED
+  PENDING_CONFIRMATION
+  CONFIRMED
+  RESCHEDULE_REQUESTED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum DestinationType {
+  WEBHOOK
+  CRM
+}
+
+enum DestinationProvider {
+  WEBHOOK
+  HUBSPOT
+  SALESFORCE
+  PIPEDRIVE
+  CUSTOM_CRM
+}
+
+enum DestinationStatus {
+  ACTIVE
+  PAUSED
+  DISABLED
+}
+
+enum ExportEventType {
+  LEAD_QUALIFIED
+  LEAD_BOOKED
+  BOOKING_CONFIRMED
+  MANUAL_REPLAY
+}
+
+enum ExportStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  PARTIAL
+  SKIPPED
+}
+
+enum ExportDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRYING
+  SKIPPED
+}
+
+model Organization {
+  id                       String                    @id @default(cuid())
+  name                     String
+  slug                     String                    @unique
+  websiteUrl               String?
+  primaryMarket            String                    @default("GR")
+  defaultLocale            Locale                    @default(EN)
+  languageMode             WorkspaceLanguage         @default(BILINGUAL)
+  planTier                 PlanTier                  @default(PREVIEW)
+  billingStatus            BillingStatus             @default(NOT_CONFIGURED)
+  billingEmail             String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  users                    User[]
+  businessProfile          BusinessProfile?
+  channels                 Channel[]
+  leads                    Lead[]
+  conversations            Conversation[]
+  contactIdentities        ContactIdentity[]
+  channelEvents            ChannelEvent[]
+  outboundAttempts         OutboundMessageAttempt[]
+  businessContextItems     BusinessContextItem[]
+  businessContextRevisions BusinessContextRevision[]
+  knowledge                KnowledgeSource[]
+  playbooks                QualificationPlaybook[]
+  integrations             IntegrationEvent[]
+  auditLogs                AuditLog[]
+  onboarding               OnboardingState?
+  bookingSettings          BookingSettings?
+  meetingTypes             MeetingType[]
+  bookingBlackouts         BookingBlackout[]
+  bookingRequests          BookingRequest[]
+  bookingEvents            BookingEvent[]
+  outboundDestinations     OutboundDestination[]
+  leadExports              LeadExport[]
+  exportDeliveryAttempts   ExportDeliveryAttempt[]
+  handoffEvents            HandoffEvent[]
+}
+
+model User {
+  id                          String                    @id @default(cuid())
+  organizationId              String
+  email                       String
+  passwordHash                String
+  name                        String?
+  role                        UserRole                  @default(MEMBER)
+  emailVerifiedAt             DateTime?
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt
+  organization                Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedLeads               Lead[]                    @relation("LeadOwner")
+  assignedConversations       Conversation[]            @relation("ConversationAssignee")
+  createdBusinessContextItems BusinessContextItem[]     @relation("BusinessContextCreatedBy")
+  updatedBusinessContextItems BusinessContextItem[]     @relation("BusinessContextUpdatedBy")
+  businessContextRevisions    BusinessContextRevision[] @relation("BusinessContextRevisionChangedBy")
+  handoffs                    Handoff[]
+  handoffEvents               HandoffEvent[]            @relation("HandoffEventActor")
+  auditLogs                   AuditLog[]                @relation("AuditLogActor")
+  sessions                    Session[]
+  resetTokens                 PasswordResetToken[]
+
+  @@unique([email])
+  @@unique([organizationId, email])
+  @@index([organizationId, role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model OnboardingState {
+  id                    String            @id @default(cuid())
+  organizationId        String            @unique
+  currentStep           OnboardingStep    @default(BUSINESS_BASICS)
+  languageMode          WorkspaceLanguage @default(BILINGUAL)
+  businessBasics        Json?
+  businessDescription   String?
+  desiredChannels       ChannelType[]     @default([])
+  leadFields            String[]          @default([])
+  bookingPreferences    Json?
+  integrationPreference Json?
+  completedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model BusinessProfile {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  displayName    String
+  description    String
+  services       String[]
+  serviceAreas   String[]
+  languages      Locale[]     @default([EN, EL])
+  timezone       String       @default("Europe/Athens")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Channel {
+  id                String                   @id @default(cuid())
+  organizationId    String
+  type              ChannelType
+  displayName       String
+  externalAccountId String?
+  status            ChannelStatus            @default(DRAFT)
+  settings          Json?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leads             Lead[]
+  conversations     Conversation[]
+  contactIdentities ContactIdentity[]
+  events            ChannelEvent[]
+  outboundAttempts  OutboundMessageAttempt[]
+
+  @@unique([organizationId, type, externalAccountId])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+}
+
+model Lead {
+  id                      String                @id @default(cuid())
+  organizationId          String
+  sourceChannelId         String?
+  ownerId                 String?
+  fullName                String?
+  email                   String?
+  phone                   String?
+  preferredContactMethod  String?
+  serviceInterest         String?
+  budget                  String?
+  location                String?
+  urgency                 String?
+  bookingIntent           Boolean               @default(false)
+  freeformNotes           String?
+  qualificationData       Json?
+  qualificationConfidence Int                   @default(0)
+  lastQualifiedAt         DateTime?
+  preferredLocale         Locale?
+  status                  LeadStatus            @default(NEW)
+  score                   Int                   @default(0)
+  consentAt               DateTime?
+  consentSource           String?
+  summary                 String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  organization            Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceChannel           Channel?              @relation(fields: [sourceChannelId], references: [id], onDelete: SetNull)
+  owner                   User?                 @relation("LeadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  conversations           Conversation[]
+  answers                 QualificationAnswer[]
+  bookings                BookingRequest[]
+  handoffs                Handoff[]
+  handoffEvents           HandoffEvent[]
+  contactIdentities       ContactIdentity[]
+  exports                 LeadExport[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, score])
+  @@index([organizationId, email])
+  @@index([organizationId, phone])
+  @@index([sourceChannelId])
+}
+
+model Conversation {
+  id                 String                   @id @default(cuid())
+  organizationId     String
+  leadId             String?
+  channelId          String?
+  assignedUserId     String?
+  externalThreadId   String?
+  status             ConversationStatus       @default(OPEN)
+  lastMessageAt      DateTime?
+  lastInboundAt      DateTime?
+  lastOutboundAt     DateTime?
+  lastMessagePreview String?
+  summary            String?
+  internalNotes      String?
+  engineState        Json?
+  aiResponderState   AiResponderState         @default(ACTIVE)
+  aiPausedAt         DateTime?
+  aiResumedAt        DateTime?
+  aiPauseReason      String?
+  handoffRequestedAt DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead               Lead?                    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  channel            Channel?                 @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  assignedUser       User?                    @relation("ConversationAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  messages           Message[]
+  handoffs           Handoff[]
+  handoffEvents      HandoffEvent[]
+  outboundAttempts   OutboundMessageAttempt[]
+  bookings           BookingRequest[]
+  exports            LeadExport[]
+
+  @@unique([organizationId, channelId, externalThreadId])
+  @@index([organizationId, status])
+  @@index([organizationId, aiResponderState])
+  @@index([organizationId, assignedUserId])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, lastInboundAt])
+  @@index([leadId])
+  @@index([channelId, externalThreadId])
+}
+
+model Message {
+  id                 String                   @id @default(cuid())
+  conversationId     String
+  direction          MessageDirection
+  senderType         SenderType
+  externalMessageId  String?
+  body               String
+  rawBody            String?
+  displayBody        String?
+  normalizedBody     String?
+  searchBody         String?
+  detectedLanguage   MessageLanguage          @default(UNKNOWN)
+  languageConfidence Int                      @default(0)
+  languageMetadata   Json?
+  metadata           Json?
+  sentAt             DateTime?
+  deliveredAt        DateTime?
+  failedAt           DateTime?
+  errorMessage       String?
+  createdAt          DateTime                 @default(now())
+  conversation       Conversation             @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  outboundAttempts   OutboundMessageAttempt[]
+
+  @@unique([conversationId, externalMessageId])
+  @@index([conversationId, createdAt])
+  @@index([conversationId, detectedLanguage])
+}
+
+model ContactIdentity {
+  id                String       @id @default(cuid())
+  organizationId    String
+  leadId            String
+  channelId         String?
+  channelType       ChannelType
+  externalContactId String
+  displayName       String?
+  email             String?
+  phone             String?
+  handle            String?
+  confidence        Int          @default(80)
+  firstSeenAt       DateTime     @default(now())
+  lastSeenAt        DateTime     @updatedAt
+  metadata          Json?
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead              Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  channel           Channel?     @relation(fields: [channelId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, channelType, externalContactId])
+  @@index([organizationId, email])
+  @@index([organizationId, phone])
+  @@index([leadId])
+  @@index([channelId])
+}
+
+model ChannelEvent {
+  id              String             @id @default(cuid())
+  organizationId  String
+  channelId       String?
+  provider        String
+  externalEventId String
+  eventType       String
+  status          ChannelEventStatus @default(RECEIVED)
+  payload         Json
+  attemptCount    Int                @default(0)
+  lastError       String?
+  receivedAt      DateTime           @default(now())
+  processedAt     DateTime?
+  updatedAt       DateTime           @updatedAt
+  organization    Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channel         Channel?           @relation(fields: [channelId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, provider, externalEventId])
+  @@index([organizationId, status])
+  @@index([channelId, receivedAt])
+}
+
+model OutboundMessageAttempt {
+  id             String                 @id @default(cuid())
+  organizationId String
+  channelId      String?
+  conversationId String
+  messageId      String?
+  provider       String
+  status         OutboundDeliveryStatus @default(QUEUED)
+  idempotencyKey String                 @unique
+  attemptCount   Int                    @default(0)
+  nextAttemptAt  DateTime?
+  sentAt         DateTime?
+  lastError      String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channel        Channel?               @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  conversation   Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message        Message?               @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([conversationId, createdAt])
+  @@index([channelId, status])
+}
+
+model KnowledgeSource {
+  id             String       @id @default(cuid())
+  organizationId String
+  title          String
+  sourceType     String
+  content        String
+  locale         Locale?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@index([organizationId, locale])
+}
+
+model BusinessContextItem {
+  id              String                    @id @default(cuid())
+  organizationId  String
+  section         BusinessContextSection
+  locale          Locale?
+  title           String
+  rawText         String
+  normalizedText  String
+  structuredData  Json
+  status          PublicationStatus         @default(DRAFT)
+  sortOrder       Int                       @default(0)
+  source          String                    @default("MANUAL")
+  createdByUserId String?
+  updatedByUserId String?
+  publishedAt     DateTime?
+  archivedAt      DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  organization    Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User?                     @relation("BusinessContextCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  updatedBy       User?                     @relation("BusinessContextUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+  revisions       BusinessContextRevision[]
+
+  @@index([organizationId, section, status])
+  @@index([organizationId, locale])
+  @@index([organizationId, updatedAt])
+}
+
+model BusinessContextRevision {
+  id              String              @id @default(cuid())
+  itemId          String
+  organizationId  String
+  changedByUserId String?
+  version         Int
+  snapshot        Json
+  changeReason    String?
+  createdAt       DateTime            @default(now())
+  item            BusinessContextItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  changedBy       User?               @relation("BusinessContextRevisionChangedBy", fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([itemId, version])
+  @@index([organizationId, createdAt])
+  @@index([changedByUserId])
+}
+
+model QualificationPlaybook {
+  id             String                  @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  locale         Locale?
+  isDefault      Boolean                 @default(false)
+  isActive       Boolean                 @default(true)
+  version        Int                     @default(1)
+  config         Json?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  questions      QualificationQuestion[]
+
+  @@index([organizationId, isDefault])
+  @@index([organizationId, isActive])
+}
+
+model QualificationQuestion {
+  id         String                @id @default(cuid())
+  playbookId String
+  label      String
+  fieldKey   String
+  priority   Int                   @default(0)
+  isRequired Boolean               @default(false)
+  createdAt  DateTime              @default(now())
+  playbook   QualificationPlaybook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  answers    QualificationAnswer[]
+
+  @@index([playbookId, priority])
+}
+
+model QualificationAnswer {
+  id         String                @id @default(cuid())
+  leadId     String
+  questionId String
+  value      String
+  createdAt  DateTime              @default(now())
+  lead       Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  question   QualificationQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, questionId])
+}
+
+model BookingSettings {
+  id                   String               @id @default(cuid())
+  organizationId       String               @unique
+  provider             BookingProvider      @default(LOCAL_MOCK)
+  timezone             String               @default("Europe/Athens")
+  calendarId           String?
+  slotIncrementMinutes Int                  @default(30)
+  minNoticeMinutes     Int                  @default(120)
+  maxAdvanceDays       Int                  @default(30)
+  autoConfirm          Boolean              @default(false)
+  confirmationMode     String               @default("CONFIRM_CONTACT_AND_SLOT")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  availabilityWindows  AvailabilityWindow[]
+
+  @@index([organizationId, provider])
+}
+
+model MeetingType {
+  id                  String           @id @default(cuid())
+  organizationId      String
+  name                String
+  description         String?
+  durationMinutes     Int              @default(30)
+  bufferBeforeMinutes Int              @default(0)
+  bufferAfterMinutes  Int              @default(15)
+  isActive            Boolean          @default(true)
+  sortOrder           Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  organization        Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookings            BookingRequest[]
+
+  @@index([organizationId, isActive])
+  @@index([organizationId, sortOrder])
+}
+
+model AvailabilityWindow {
+  id                String          @id @default(cuid())
+  bookingSettingsId String
+  dayOfWeek         Int
+  startTime         String
+  endTime           String
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  bookingSettings   BookingSettings @relation(fields: [bookingSettingsId], references: [id], onDelete: Cascade)
+
+  @@index([bookingSettingsId, dayOfWeek])
+}
+
+model BookingBlackout {
+  id             String       @id @default(cuid())
+  organizationId String
+  startsAt       DateTime
+  endsAt         DateTime
+  reason         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, startsAt, endsAt])
+}
+
+model BookingRequest {
+  id                 String           @id @default(cuid())
+  organizationId     String
+  leadId             String
+  conversationId     String?
+  meetingTypeId      String?
+  requestedTime      DateTime?
+  startsAt           DateTime?
+  endsAt             DateTime?
+  timezone           String           @default("Europe/Athens")
+  status             BookingStatus    @default(REQUESTED)
+  provider           BookingProvider  @default(LOCAL_MOCK)
+  externalEventId    String?
+  customerName       String?
+  customerEmail      String?
+  customerPhone      String?
+  customerLocale     Locale?
+  summary            String?
+  notes              String?
+  cancellationReason String?
+  rescheduledFromId  String?
+  structuredData     Json?
+  confirmedAt        DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  organization       Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead               Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  conversation       Conversation?    @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  meetingType        MeetingType?     @relation(fields: [meetingTypeId], references: [id], onDelete: SetNull)
+  rescheduledFrom    BookingRequest?  @relation("BookingReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo      BookingRequest[] @relation("BookingReschedule")
+  events             BookingEvent[]
+  exports            LeadExport[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, startsAt])
+  @@index([organizationId, createdAt])
+  @@index([leadId, status])
+  @@index([conversationId])
+  @@index([meetingTypeId])
+}
+
+model BookingEvent {
+  id               String          @id @default(cuid())
+  organizationId   String
+  bookingRequestId String?
+  eventType        String
+  message          String
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookingRequest   BookingRequest? @relation(fields: [bookingRequestId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([bookingRequestId, createdAt])
+}
+
+model Handoff {
+  id             String         @id @default(cuid())
+  leadId         String
+  conversationId String?
+  assignedUserId String?
+  reason         String
+  status         HandoffStatus  @default(REQUESTED)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  lead           Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  conversation   Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  assignedUser   User?          @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  events         HandoffEvent[]
+
+  @@index([leadId, status])
+  @@index([assignedUserId, status])
+}
+
+model HandoffEvent {
+  id             String           @id @default(cuid())
+  organizationId String
+  conversationId String
+  leadId         String?
+  handoffId      String?
+  actorUserId    String?
+  eventType      HandoffEventType
+  reason         String?
+  note           String?
+  metadata       Json?
+  createdAt      DateTime         @default(now())
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  lead           Lead?            @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  handoff        Handoff?         @relation(fields: [handoffId], references: [id], onDelete: SetNull)
+  actorUser      User?            @relation("HandoffEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([conversationId, createdAt])
+  @@index([handoffId, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model IntegrationEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  provider       String
+  eventType      String
+  payload        Json
+  deliveredAt    DateTime?
+  errorMessage   String?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, provider])
+  @@index([organizationId, deliveredAt])
+}
+
+model OutboundDestination {
+  id                     String                  @id @default(cuid())
+  organizationId         String
+  name                   String
+  type                   DestinationType
+  provider               DestinationProvider     @default(WEBHOOK)
+  status                 DestinationStatus       @default(ACTIVE)
+  endpointUrl            String?
+  secretEncrypted        String?
+  secretLast4            String?
+  headers                Json?
+  eventTypes             ExportEventType[]       @default([LEAD_QUALIFIED, BOOKING_CONFIRMED])
+  includeRawConversation Boolean                 @default(false)
+  maxAttempts            Int                     @default(3)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveryAttempts       ExportDeliveryAttempt[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, provider])
+}
+
+model LeadExport {
+  id               String                  @id @default(cuid())
+  organizationId   String
+  leadId           String
+  conversationId   String?
+  bookingRequestId String?
+  eventType        ExportEventType
+  payloadVersion   String                  @default("northline.lead_export.v1")
+  payload          Json
+  payloadHash      String
+  idempotencyKey   String                  @unique
+  status           ExportStatus            @default(PENDING)
+  lastError        String?
+  deliveredAt      DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  organization     Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lead             Lead                    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  conversation     Conversation?           @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  bookingRequest   BookingRequest?         @relation(fields: [bookingRequestId], references: [id], onDelete: SetNull)
+  deliveryAttempts ExportDeliveryAttempt[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, eventType, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([leadId, createdAt])
+  @@index([conversationId])
+  @@index([bookingRequestId])
+}
+
+model ExportDeliveryAttempt {
+  id                 String               @id @default(cuid())
+  organizationId     String
+  exportId           String
+  destinationId      String
+  status             ExportDeliveryStatus @default(PENDING)
+  attemptNumber      Int                  @default(1)
+  idempotencyKey     String               @unique
+  requestPayloadHash String
+  responseStatus     Int?
+  responseBody       String?
+  errorMessage       String?
+  nextAttemptAt      DateTime?
+  deliveredAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  export             LeadExport           @relation(fields: [exportId], references: [id], onDelete: Cascade)
+  destination        OutboundDestination  @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, nextAttemptAt])
+  @@index([organizationId, createdAt])
+  @@index([destinationId, status])
+  @@index([exportId, createdAt])
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  actorUserId    String?
+  action         String
+  targetType     String
+  targetId       String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorUser      User?        @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([actorUserId])
+  @@index([organizationId, action, createdAt])
+}

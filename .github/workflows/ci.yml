@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "codex/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      DATABASE_URL: "postgresql://northline:northline@localhost:5432/northline_ci?schema=public"
+      NORTHLINE_SECRET_ENCRYPTION_KEY: "ci-only-placeholder-key"
+      NORTHLINE_WEBSITE_CHAT_SECRET: "ci-only-placeholder-secret"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

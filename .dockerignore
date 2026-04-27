@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.github
+.vercel
+coverage
+*.log
+.env
+.env.*
+!.env.example
+!.env.preview.example
+!.env.production.example
+src/generated/prisma
