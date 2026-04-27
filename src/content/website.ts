@@ -3,7 +3,7 @@ export const siteConfig = {
   domain: "northline.ai",
   email: "hello@northline.ai",
   description:
-    "AI sales assistant for inbound leads across website chat and messaging channels.",
+    "Inbound lead handling for website chat and messaging channels.",
   nav: [
     { label: "Product", href: "/#product" },
     { label: "How it works", href: "/#how-it-works" },
@@ -42,79 +42,89 @@ export const cta = {
   submitInterest: "Submit interest",
   seePricing: "See pricing",
   seeProduct: "See product",
+  seeWorkflow: "See workflow",
 } as const;
 
 export const homePage = {
   hero: {
-    eyebrow: "AI sales assistant for inbound leads",
-    title: "Reply faster, qualify better, and stop losing good leads.",
+    eyebrow: "Inbound lead handling for chat and messaging",
+    title: "Turn inbound messages into qualified next steps.",
     body:
-      "Northline helps businesses handle inbound inquiries from chat and messaging channels. It answers common questions, captures lead details, books meetings, and prepares clean handoffs for your team.",
+      "Northline helps businesses reply to inbound leads, ask the right follow-up questions, suggest booking, and route conversations to a human when needed. Greek and English are built in.",
     bullets: [
-      "Greek and English support from the start",
-      "Built for Greek and European SMB operations",
-      "Preview-only rebuild, separate from the live northline.ai site",
+      "Website chat now, messaging-channel ready",
+      "Greek and English lead flows",
+      "Structured handoff data for booking, CRM, or sales follow-up",
     ],
   },
   trust: {
-    eyebrow: "Built for practical sales teams",
-    title: "Designed around the moments where leads usually drop.",
+    eyebrow: "What Northline does",
+    title: "Three jobs before a salesperson takes over.",
     metrics: [
-      { value: "< 1 min", label: "target first-response workflow" },
-      { value: "2", label: "launch languages: Greek and English" },
-      { value: "7", label: "planned channel categories" },
+      {
+        value: "Reply",
+        label: "Answer common questions from approved business details.",
+      },
+      {
+        value: "Qualify",
+        label: "Collect fit, urgency, location, and contact details consistently.",
+      },
+      {
+        value: "Route",
+        label: "Suggest booking or hand off to the right person with context.",
+      },
     ],
     proof: [
-      "No production cutover during rebuild",
-      "PostgreSQL-ready product foundation",
-      "Consent and handoff concepts built in",
+      "Source, language, consent, and owner stay attached to each lead",
+      "Low-confidence or sensitive conversations can be escalated",
+      "Lead data is prepared for booking, CRM, webhook, or internal follow-up",
     ],
   },
   problemSolution: {
-    eyebrow: "Problem and solution",
-    title: "Most lead loss is operational, not mysterious.",
+    eyebrow: "Problem",
+    title: "Good leads go cold when every inbox has a different process.",
     problem:
-      "A visitor asks a question after hours. A WhatsApp message waits too long. A sales rep asks the same qualifying questions again. A booking link is sent without context. Each small delay makes the lead colder.",
+      "Most businesses do not lose inbound demand because people do not care. They lose it because replies wait, questions vary by person, and the next step is unclear.",
     solution:
-      "Northline gives inbound leads a structured path: immediate reply, grounded qualification, booking recommendation, and a clean handoff into the systems your business already uses.",
+      "Northline gives each new message the same path: reply, qualify, recommend a next step, and keep the data ready for the team.",
     points: [
-      "Respond to common inquiries before the team is available",
-      "Collect fit, urgency, location, budget, and contact details consistently",
-      "Escalate sensitive or low-confidence conversations to a human",
-      "Prepare CRM, webhook, and booking data without manual cleanup",
+      "Reply to website-chat leads while interest is still fresh",
+      "Ask only the follow-up questions needed for fit and urgency",
+      "Suggest booking when the lead is ready",
+      "Route edge cases to a human with a short summary",
     ],
   },
   howItWorks: {
-    eyebrow: "How it works",
-    title: "A simple workflow from first message to next step.",
+    eyebrow: "Workflow",
+    title: "From first message to booked or handed off.",
     steps: [
       {
         title: "Capture",
         body:
-          "Website chat and messaging channels feed one lead workflow instead of scattered inboxes.",
+          "Pull website chat and messaging intake into one lead flow.",
       },
       {
         title: "Reply",
         body:
-          "Northline answers routine questions using the business knowledge you provide.",
+          "Use the business knowledge you provide to answer common questions.",
       },
       {
         title: "Qualify",
         body:
-          "The assistant asks only the questions needed to understand fit, urgency, and contactability.",
+          "Ask for the missing details: need, timing, location, budget, and contact permission.",
       },
       {
-        title: "Convert",
+        title: "Move",
         body:
-          "Qualified leads are routed to booking, CRM, webhook, or a human owner with context attached.",
+          "Send ready leads toward booking, CRM/webhook sync, or a human owner.",
       },
     ],
   },
   channels: {
-    eyebrow: "Supported channels",
-    title: "One sales workflow across the places leads already message you.",
+    eyebrow: "Channels",
+    title: "Start with website chat. Extend to the channels buyers already use.",
     body:
-      "The first build focuses on website chat and clean channel abstractions. The architecture is prepared for messaging platforms and API-based intake as credentials become available.",
+      "The rebuild focuses on website chat first, with clear abstractions for WhatsApp, Instagram, Messenger, Viber, email, API intake, and CRM/webhook events.",
     items: [
       "Website chat",
       "WhatsApp",
@@ -123,102 +133,52 @@ export const homePage = {
       "Viber",
       "Email",
       "API intake",
-      "CRM/webhook events",
+      "CRM/webhook sync",
     ],
   },
   features: {
-    eyebrow: "Core features",
-    title: "Everything needed before a salesperson takes over.",
+    eyebrow: "Structured lead data",
+    title: "The output is not just a chat transcript.",
+    body:
+      "Northline keeps the fields your team needs for follow-up, booking, and system sync.",
     items: [
       {
-        title: "Lead capture",
+        title: "Contact and consent",
         body:
-          "Turn each inbound conversation into a structured lead record with source, language, consent, and owner context.",
+          "Capture name, email, company, contact permission, and source before handoff.",
       },
       {
-        title: "Grounded replies",
+        title: "Need and urgency",
         body:
-          "Use business knowledge such as services, areas, pricing rules, policies, and FAQs to answer without guessing.",
+          "Track what the lead wants, how soon they need it, and whether they are ready to book.",
       },
       {
-        title: "Qualification playbooks",
+        title: "Language and channel",
         body:
-          "Ask consistent questions and score readiness without pretending AI can close every deal alone.",
+          "Keep Greek or English preference and the original source channel visible.",
       },
       {
-        title: "Booking assistance",
+        title: "Booking path",
         body:
-          "Recommend meeting or appointment paths when the lead is ready and the next step is clear.",
+          "Show when a meeting, appointment, or consultation is the right next step.",
       },
       {
-        title: "System sync",
+        title: "Handoff summary",
         body:
-          "Prepare clean lead data for CRM, webhook, calendar, or internal workflows as integrations are added.",
+          "Give the team a short context summary instead of a raw message thread.",
       },
       {
-        title: "Human handoff",
+        title: "Sync-ready payloads",
         body:
-          "Route high-value, sensitive, or uncertain conversations to the right teammate with the thread summary attached.",
-      },
-    ],
-  },
-  useCases: {
-    eyebrow: "Industry flexibility",
-    title: "Broad enough for many businesses, specific enough to be useful.",
-    body:
-      "Northline is not locked to one vertical. Industry templates can come later; the base workflow works for teams that need fast response, qualification, booking, and handoff.",
-    items: [
-      "Clinics and wellness practices",
-      "Home and field services",
-      "Education and training providers",
-      "Professional services",
-      "Real estate and property teams",
-      "Hospitality and local commerce",
-    ],
-  },
-  preview: {
-    eyebrow: "Product preview",
-    title: "A lead desk your team can actually operate.",
-    body:
-      "The product UI is designed around status, urgency, missing information, language, source channel, and the next best action. The goal is clarity for operators, not a black-box chatbot.",
-  },
-  pricingTeaser: {
-    eyebrow: "Pricing",
-    title: "Start with preview access while the product is rebuilt.",
-    body:
-      "Public pricing will be finalized after the first product workflows are validated. Early conversations help shape packaging for Greek and European businesses.",
-  },
-  faq: {
-    eyebrow: "FAQ",
-    title: "Straight answers before you request a demo.",
-    items: [
-      {
-        question: "Is Northline only for one industry?",
-        answer:
-          "No. The core workflow is broad: capture, reply, qualify, book, sync, and hand off. Later templates can add industry-specific questions and knowledge.",
-      },
-      {
-        question: "Does it support Greek?",
-        answer:
-          "Yes. Greek and English are treated as first-class languages for the product direction, content, and future conversation workflows.",
-      },
-      {
-        question: "Will it replace my sales team?",
-        answer:
-          "No. Northline handles repetitive inbound work and prepares better handoffs. Human review remains important for sensitive, high-value, or unclear conversations.",
-      },
-      {
-        question: "Which integrations are included now?",
-        answer:
-          "This rebuild includes the internal structure for channels, booking, CRM/webhook sync, and handoff. External credentials are intentionally not required for the marketing preview.",
+          "Prepare structured fields for CRM, webhook, calendar, or internal tools.",
       },
     ],
   },
   finalCta: {
-    eyebrow: "Preview access",
-    title: "See how Northline would handle your inbound leads.",
+    eyebrow: "See it on your workflow",
+    title: "Show us where your inbound leads arrive.",
     body:
-      "Share your business type, lead sources, and current response workflow. We will use that context to shape the right demo path.",
+      "Share your business type, lead sources, and what should happen after a qualified conversation. We will shape the demo around that path.",
   },
 } as const;
 

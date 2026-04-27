@@ -3,9 +3,9 @@ import { MarketingPage } from "@/components/marketing/marketing-page";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "AI sales assistant for inbound leads",
+  title: "Inbound lead handling for chat and messaging",
   description:
-    "Northline replies to inbound inquiries, qualifies prospects, helps book meetings, and prepares lead data for business systems.",
+    "Northline replies to inbound leads, asks follow-up questions, suggests booking, and routes clean lead data to your team.",
   path: "/",
 });
 

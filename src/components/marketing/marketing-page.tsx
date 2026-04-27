@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  BookOpenText,
   CalendarCheck,
   CheckCircle2,
   DatabaseZap,
@@ -15,25 +14,23 @@ import {
 import { Badge } from "@/components/marketing/badge";
 import { ConversionForm } from "@/components/marketing/conversion-form";
 import { FeatureBlock } from "@/components/marketing/feature-block";
-import { FaqItem } from "@/components/marketing/faq-item";
-import { PricingCard } from "@/components/marketing/pricing-card";
 import { ProductVisual } from "@/components/marketing/product-visual";
 import { Section, SectionHeader } from "@/components/marketing/section";
 import { WebsiteFooter } from "@/components/marketing/website-footer";
 import { WebsiteHeader } from "@/components/marketing/website-header";
 import { ButtonLink } from "@/components/ui/button-link";
 import { marketingEvents } from "@/lib/marketing-events";
-import { cta, homePage, pricingPage } from "@/content/website";
+import { cta, homePage } from "@/content/website";
 import type { Locale } from "@/content/marketing";
 
 const workflowIcons = [Inbox, MessageSquareText, Route, Handshake];
 const featureIcons = [
   Inbox,
-  BookOpenText,
-  ShieldCheck,
+  CheckCircle2,
+  Languages,
   CalendarCheck,
-  DatabaseZap,
   Handshake,
+  DatabaseZap,
 ];
 const featureAccents = ["teal", "violet", "blue", "amber", "teal", "rose"] as const;
 
@@ -70,15 +67,15 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
                 {cta.requestDemo}
               </ButtonLink>
               <ButtonLink
-                href="/pricing"
+                href="/#how-it-works"
                 tone="secondary"
-                icon={CalendarCheck}
+                icon={Route}
                 size="lg"
                 analyticsEvent={marketingEvents.ctaClick}
-                analyticsLabel={cta.seePricing}
+                analyticsLabel={cta.seeWorkflow}
                 analyticsLocation="home_hero"
               >
-                {cta.seePricing}
+                {cta.seeWorkflow}
               </ButtonLink>
             </div>
             <ul className="mt-9 grid max-w-2xl gap-3 text-body-sm text-muted sm:grid-cols-3">
@@ -98,8 +95,8 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
             <ProductVisual locale={locale} compact />
             <ConversionForm
               type="demo"
-              title="Get a preview walkthrough"
-              body="Tell us where inbound leads come from today. We will shape the demo around your workflow."
+              title="Request a focused demo"
+              body="Tell us your lead sources, language needs, and what counts as sales-ready."
               submitLabel={cta.requestDemo}
               location="home_hero"
               compact
@@ -231,6 +228,7 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
         <SectionHeader
           eyebrow={homePage.features.eyebrow}
           title={homePage.features.title}
+          body={homePage.features.body}
           align="center"
         />
         <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -248,80 +246,6 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
               />
             );
           })}
-        </div>
-      </Section>
-
-      <Section tone="raised">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-          <SectionHeader
-            eyebrow={homePage.useCases.eyebrow}
-            title={homePage.useCases.title}
-            body={homePage.useCases.body}
-          />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {homePage.useCases.items.map((item) => (
-              <div
-                key={item}
-                className="rounded-md border border-border bg-canvas px-5 py-4 text-body-sm font-black shadow-card"
-              >
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section id="preview">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <SectionHeader
-            eyebrow={homePage.preview.eyebrow}
-            title={homePage.preview.title}
-            body={homePage.preview.body}
-          />
-          <ProductVisual locale={locale} />
-        </div>
-      </Section>
-
-      <Section id="pricing" tone="raised">
-        <SectionHeader
-          eyebrow={homePage.pricingTeaser.eyebrow}
-          title={homePage.pricingTeaser.title}
-          body={homePage.pricingTeaser.body}
-          align="center"
-        />
-        <div className="mt-12 grid gap-4 lg:grid-cols-3">
-          {pricingPage.plans.map((plan) => (
-            <PricingCard
-              key={plan.name}
-              name={plan.name}
-              price={plan.price}
-              description={plan.description}
-              features={plan.features}
-              featured={"featured" in plan ? plan.featured : false}
-              ctaLabel={cta.requestDemo}
-              ctaHref="/contact?intent=demo"
-              analyticsLocation="home_pricing_teaser"
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section id="faq">
-        <div className="mx-auto max-w-4xl">
-          <SectionHeader
-            eyebrow={homePage.faq.eyebrow}
-            title={homePage.faq.title}
-            align="center"
-          />
-          <div className="mt-10 rounded-lg border border-border bg-raised px-5 sm:px-8">
-            {homePage.faq.items.map((item) => (
-              <FaqItem
-                key={item.question}
-                question={item.question}
-                answer={item.answer}
-              />
-            ))}
-          </div>
         </div>
       </Section>
 
@@ -353,10 +277,10 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
             </ButtonLink>
           </div>
           <ConversionForm
-            type="waitlist"
-            title="Join the early-access list"
-            body="Get notified as the app shell, inbox, and channel workflows become available for preview."
-            submitLabel={cta.joinWaitlist}
+            type="demo"
+            title="Request a focused demo"
+            body="Get a demo shaped around your lead sources, languages, and handoff rules."
+            submitLabel={cta.requestDemo}
             location="home_final_cta"
             compact
           />

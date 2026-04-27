@@ -20,7 +20,7 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://northline.ai";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Northline | AI sales assistant for inbound leads",
+    default: "Northline | Inbound lead handling for chat and messaging",
     template: "%s | Northline",
   },
   description:
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Northline",
     description:
-      "AI sales assistant for inbound leads across website chat and messaging channels.",
+      "Inbound lead handling for website chat and messaging channels.",
     siteName: "Northline",
     url: appUrl,
     type: "website",
