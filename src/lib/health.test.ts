@@ -31,6 +31,20 @@ describe("health readiness helpers", () => {
     ]);
   });
 
+  it("treats invalid public app URLs as missing", () => {
+    const health = getEnvironmentHealth({
+      NODE_ENV: "production",
+      VERCEL_ENV: "production",
+      DATABASE_URL: "postgresql://prod",
+      NEXT_PUBLIC_APP_URL: "https://<future-production-domain>",
+      NORTHLINE_SECRET_ENCRYPTION_KEY: "secret",
+      NORTHLINE_WEBSITE_CHAT_SECRET: "secret",
+    });
+
+    expect(health.ok).toBe(false);
+    expect(health.missing).toEqual(["NEXT_PUBLIC_APP_URL"]);
+  });
+
   it("marks the service degraded when any readiness check fails", () => {
     const payload = buildHealthPayload({
       now: new Date("2026-04-26T12:00:00.000Z"),

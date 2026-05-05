@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { getPublicAppUrl } from "@/lib/app-url";
 
 const publicRoutes = ["/", "/pricing", "/about", "/contact", "/privacy", "/terms"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://northline.ai";
+  const appUrl = getPublicAppUrl();
   const lastModified = new Date();
 
   return publicRoutes.map((route) => ({

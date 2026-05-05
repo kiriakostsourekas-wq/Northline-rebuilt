@@ -1,3 +1,5 @@
+import { isValidPublicUrl } from "@/lib/app-url";
+
 export type RuntimeEnvironment = "local" | "development" | "preview" | "production";
 
 export type EnvironmentHealth = {
@@ -21,7 +23,7 @@ export function getEnvironmentHealth(
   const required = strictProduction
     ? [...alwaysRequired, ...strictProductionRequired]
     : [...alwaysRequired];
-  const missing = required.filter((key) => !env[key]?.trim());
+  const missing = required.filter((key) => isMissingRequiredValue(key, env[key]));
 
   return {
     ok: missing.length === 0,
@@ -29,6 +31,15 @@ export function getEnvironmentHealth(
     missing,
     strictProduction,
   };
+}
+
+function isMissingRequiredValue(key: string, value: string | undefined) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) return true;
+  if (key === "NEXT_PUBLIC_APP_URL") return !isValidPublicUrl(trimmed);
+
+  return false;
 }
 
 export function getRuntimeEnvironment(

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans } from "next/font/google";
 import { AnalyticsListener } from "@/components/marketing/analytics-listener";
+import { getPublicAppUrl } from "@/lib/app-url";
 import "./globals.css";
 
 const notoSans = Noto_Sans({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://northline.ai";
+const appUrl = getPublicAppUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
