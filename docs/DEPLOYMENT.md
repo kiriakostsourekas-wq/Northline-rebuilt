@@ -22,6 +22,8 @@ Local development:
 
 - Copy `.env.example` to `.env.local` or `.env`.
 - Use a local or disposable PostgreSQL database.
+- Keep `DIRECT_URL` pointed at the same local database, or at the direct
+  Supabase database URL when validating against Supabase.
 - Run `npm run db:migrate:dev` when actively creating migrations.
 - Run `npm run db:seed:dev` only against disposable local/preview databases.
 
@@ -29,14 +31,20 @@ Preview:
 
 - Use `.env.preview.example` as the variable checklist.
 - Configure variables in the new Vercel project only.
-- Use a preview database dedicated to this rebuild.
+- Use a Supabase preview database dedicated to this rebuild.
+- Set `DATABASE_URL` to the Supabase transaction pooler URL with
+  `pgbouncer=true`.
+- Set `DIRECT_URL` to the direct Supabase database URL for migrations and
+  seed/admin commands.
 - Run `npm run db:migrate:deploy` against the preview database before or during
   preview release validation.
 
 Future production:
 
 - Use `.env.production.example` as the variable checklist.
-- Use a new production database dedicated to this rebuild.
+- Use a new Supabase production database dedicated to this rebuild.
+- Keep app runtime traffic on `DATABASE_URL` and migration/admin traffic on
+  `DIRECT_URL`.
 - Do not connect this repository to the existing live database or production
   Vercel project until cutover is explicitly planned.
 - Run a rehearsal preview deployment and rollback drill before domain cutover.
@@ -45,7 +53,8 @@ Future production:
 
 | Variable | Local | Preview | Future production | Notes |
 | --- | --- | --- | --- | --- |
-| `DATABASE_URL` | Required for app flows | Required | Required | PostgreSQL connection string for this rebuild only. |
+| `DATABASE_URL` | Required for app flows | Required | Required | Runtime PostgreSQL connection string for this rebuild only. Use the Supabase transaction pooler with `pgbouncer=true` in preview/serverless environments. |
+| `DIRECT_URL` | Recommended | Required | Required | Direct PostgreSQL connection string for Prisma CLI migrations, seed scripts, backup, restore, and admin tooling. |
 | `NEXT_PUBLIC_APP_URL` | Required | Required | Required | Public URL for links/cookies. Public browser value. |
 | `NORTHLINE_WEBSITE_CHAT_SECRET` | Optional | Recommended | Required | HMAC secret for website-chat webhooks. |
 | `NORTHLINE_SECRET_ENCRYPTION_KEY` | Optional | Required for destination secrets | Required | Stable encryption key for outbound destination secrets. |
@@ -70,7 +79,7 @@ npm run build
 ```
 
 To exercise authenticated app flows locally, start a PostgreSQL database,
-point `DATABASE_URL` at it, then run:
+point `DATABASE_URL` and `DIRECT_URL` at it, then run:
 
 ```bash
 npm run db:migrate:deploy
@@ -102,10 +111,12 @@ Schema changes:
 Preview release:
 
 1. Back up or snapshot the preview database if it contains useful test data.
-2. Set `DATABASE_URL` to the preview database.
-3. Run `npm run db:migrate:deploy`.
-4. Deploy a Vercel preview from the branch.
-5. Check `/api/health`, sign-in, dashboard, inbox, booking, destinations, and
+2. Set `DATABASE_URL` to the Supabase transaction pooler URL with
+   `pgbouncer=true`.
+3. Set `DIRECT_URL` to the direct Supabase database URL.
+4. Run `npm run db:migrate:deploy`.
+5. Deploy a Vercel preview from the branch.
+6. Check `/api/health`, sign-in, dashboard, inbox, booking, destinations, and
    privacy controls.
 
 Future production release:
@@ -134,7 +145,8 @@ Do not run migrations against the existing live Northline database.
   export delivery attempts
 
 The seed is idempotent and intended for local/preview databases only. It should
-not run in future production.
+not run in future production. When `DIRECT_URL` is set, the seed script uses it
+so Supabase seed runs avoid the transaction pooler.
 
 Unit tests use deterministic in-memory fixtures and do not require a live
 database.
@@ -153,6 +165,14 @@ The endpoint returns `200` when all readiness checks pass and `503` when the
 environment or database check fails. It does not expose secret values.
 
 `HEAD /api/health` provides the same readiness status without a response body.
+
+## Supabase Notes
+
+`docs/SUPABASE.md` contains the detailed Supabase setup flow. The current app
+uses server-side Prisma and its own auth/session tables; Supabase Auth, browser
+Supabase clients, anon keys, and service-role keys are not part of the current
+preview setup. If direct browser access through Supabase APIs is added later,
+enable Row Level Security and tenant-scoped policies before shipping it.
 
 ## Error Boundary Strategy
 
@@ -211,7 +231,8 @@ Run:
 
 ```bash
 docker run --rm -p 3000:3000 \
-  -e DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/northline_preview?schema=public" \
+  -e DATABASE_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require" \
+  -e DIRECT_URL="postgresql://postgres:password@db.project-ref.supabase.co:5432/postgres?sslmode=require" \
   -e NEXT_PUBLIC_APP_URL="http://localhost:3000" \
   -e NORTHLINE_SECRET_ENCRYPTION_KEY="local-container-key" \
   -e NORTHLINE_WEBSITE_CHAT_SECRET="local-container-webhook-secret" \

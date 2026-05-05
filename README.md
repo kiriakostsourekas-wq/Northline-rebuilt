@@ -56,6 +56,7 @@ Copy `.env.example` to `.env` for local development:
 
 ```bash
 DATABASE_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public"
+DIRECT_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 # Optional local website-chat webhook guard.
@@ -78,22 +79,32 @@ Do not point this rebuild at the existing production database or production Verc
 
 The Prisma schema is in `prisma/schema.prisma`. The generated Prisma client is written to `src/generated/prisma` and is ignored by git. `npm install` runs `prisma generate` automatically.
 
+Supabase preview databases are supported through a two-URL setup:
+
+- `DATABASE_URL` is used by the running app. Use the Supabase transaction
+  pooler/Supavisor URL with `pgbouncer=true`.
+- `DIRECT_URL` is used by Prisma CLI commands and seed scripts. Use the direct
+  database URL from Supabase Connect.
+
+Detailed setup notes live in `docs/SUPABASE.md`.
+
 Useful commands:
 
 ```bash
 npm run prisma:generate
-DATABASE_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run prisma:validate
-DATABASE_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:migrate:dev
-DATABASE_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:migrate:deploy
-DATABASE_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:seed:dev
+DIRECT_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run prisma:validate
+DIRECT_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:migrate:dev
+DIRECT_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:migrate:deploy
+DIRECT_URL="postgresql://northline:northline@localhost:5432/northline_rebuild?schema=public" npm run db:seed:dev
 ```
 
 No live database is required for lint, typecheck, unit tests, or Next.js build in the current phase.
 
 To exercise sign-up, sign-in, onboarding, and the protected dashboard locally,
 run a local PostgreSQL database with `DATABASE_URL` pointed at the rebuild
-database only, then run the Prisma migration command for this repository. Do
-not reuse production credentials.
+database only, keep `DIRECT_URL` pointed at the same local database or at the
+Supabase direct URL, then run the Prisma migration command for this repository.
+Do not reuse production credentials.
 
 ## Checks
 
@@ -109,6 +120,7 @@ npm run build
 
 - Deployment and release runbooks live in `docs/DEPLOYMENT.md` and
   `docs/RELEASE_CHECKLIST.md`.
+- Supabase preview setup lives in `docs/SUPABASE.md`.
 - Final preview readiness notes live in `docs/LAUNCH_READINESS.md`.
 - Create a new Vercel project for this repository.
 - Use preview deployments during development.

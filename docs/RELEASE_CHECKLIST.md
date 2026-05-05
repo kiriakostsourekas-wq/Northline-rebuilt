@@ -11,7 +11,10 @@ separate cutover task explicitly approves it.
 - [ ] Confirm the target Vercel project is the new rebuild project.
 - [ ] Confirm no `northline.ai` production-domain changes are included.
 - [ ] Confirm required environment variables are set for the target environment.
-- [ ] Confirm `DATABASE_URL` points to the rebuild database only.
+- [ ] Confirm `DATABASE_URL` points to the rebuild Supabase pooler only.
+- [ ] Confirm `DIRECT_URL` points to the rebuild Supabase direct database only.
+- [ ] Confirm `DATABASE_URL` includes `pgbouncer=true` when using the
+  transaction pooler.
 - [ ] Confirm `NORTHLINE_SECRET_ENCRYPTION_KEY` is set before testing stored
   destination secrets.
 - [ ] Confirm `NORTHLINE_WEBSITE_CHAT_SECRET` is set before accepting signed
@@ -34,6 +37,7 @@ separate cutover task explicitly approves it.
 
 - [ ] Review all pending migration SQL.
 - [ ] Back up or snapshot the target database if it contains useful data.
+- [ ] Confirm Prisma CLI commands are using `DIRECT_URL`.
 - [ ] Run `npm run db:migrate:deploy` against the target rebuild database.
 - [ ] Run `npm run db:seed:dev` only for local/preview environments that need
   fixture data.

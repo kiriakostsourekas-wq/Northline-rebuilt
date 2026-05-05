@@ -77,7 +77,10 @@ after request identity and retention obligations are verified.
 
 ## Production Setup Cautions
 
-- Configure a dedicated preview/production database for this rebuild only.
+- Configure a dedicated Supabase preview/production database for this rebuild
+  only.
+- Use Supabase pooled `DATABASE_URL` for runtime app traffic and direct
+  `DIRECT_URL` for migrations, seed scripts, and admin tooling.
 - Do not point this code at the existing live Northline database.
 - Set `NORTHLINE_SECRET_ENCRYPTION_KEY` before storing live outbound
   destination secrets.

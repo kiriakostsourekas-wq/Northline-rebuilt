@@ -21,11 +21,15 @@ const seed = {
 };
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required to seed development data.");
+  const seedDatabaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+  if (!seedDatabaseUrl) {
+    throw new Error(
+      "DIRECT_URL or DATABASE_URL is required to seed development data.",
+    );
   }
 
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const client = new Client({ connectionString: seedDatabaseUrl });
   await client.connect();
 
   try {
