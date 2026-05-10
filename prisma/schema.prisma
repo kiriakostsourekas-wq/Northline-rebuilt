@@ -163,6 +163,26 @@ enum PublicationStatus {
   ARCHIVED
 }
 
+enum KnowledgeChunkStatus {
+  ACTIVE
+  STALE
+  ARCHIVED
+}
+
+enum KnowledgeIndexJobType {
+  UPSERT_ITEM
+  DELETE_ITEM
+  REINDEX_WORKSPACE
+}
+
+enum KnowledgeIndexJobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
 enum BookingProvider {
   LOCAL_MOCK
   GOOGLE_CALENDAR
@@ -244,6 +264,8 @@ model Organization {
   outboundAttempts         OutboundMessageAttempt[]
   businessContextItems     BusinessContextItem[]
   businessContextRevisions BusinessContextRevision[]
+  businessKnowledgeChunks  BusinessKnowledgeChunk[]
+  knowledgeIndexJobs       KnowledgeIndexJob[]
   knowledge                KnowledgeSource[]
   playbooks                QualificationPlaybook[]
   integrations             IntegrationEvent[]
@@ -592,6 +614,8 @@ model BusinessContextItem {
   createdBy       User?                     @relation("BusinessContextCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
   updatedBy       User?                     @relation("BusinessContextUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
   revisions       BusinessContextRevision[]
+  knowledgeChunks BusinessKnowledgeChunk[]
+  indexJobs       KnowledgeIndexJob[]
 
   @@index([organizationId, section, status])
   @@index([organizationId, locale])
@@ -614,6 +638,65 @@ model BusinessContextRevision {
   @@unique([itemId, version])
   @@index([organizationId, createdAt])
   @@index([changedByUserId])
+}
+
+model BusinessKnowledgeChunk {
+  id                  String                 @id @default(cuid())
+  organizationId      String
+  itemId              String
+  section             BusinessContextSection
+  locale              Locale?
+  publicationStatus   PublicationStatus      @default(PUBLISHED)
+  chunkStatus         KnowledgeChunkStatus   @default(ACTIVE)
+  chunkIndex          Int
+  title               String
+  text                String
+  normalizedText      String
+  searchText          String
+  language            String                 @default("UNKNOWN")
+  contentHash         String
+  tokensEstimate      Int                    @default(0)
+  metadata            Json
+  embedding           Float[]                @default([])
+  embeddingProvider   String?
+  embeddingModel      String?
+  embeddingDimensions Int?
+  embeddingHash       String?
+  indexedAt           DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  organization        Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  item                BusinessContextItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, chunkIndex])
+  @@index([organizationId, section, locale])
+  @@index([organizationId, chunkStatus])
+  @@index([organizationId, chunkStatus, publicationStatus, indexedAt], map: "BusinessKnowledgeChunk_retrieval_scan_idx")
+  @@index([organizationId, contentHash])
+  @@index([itemId, chunkStatus])
+}
+
+model KnowledgeIndexJob {
+  id             String                  @id @default(cuid())
+  organizationId String
+  itemId         String?
+  jobType        KnowledgeIndexJobType
+  status         KnowledgeIndexJobStatus @default(PENDING)
+  reason         String
+  errorMessage   String?
+  attemptCount   Int                     @default(0)
+  metadata       Json?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  item           BusinessContextItem?    @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, itemId])
+  @@index([itemId, status])
+  @@index([status, createdAt], map: "KnowledgeIndexJob_pending_queue_idx")
 }
 
 model QualificationPlaybook {

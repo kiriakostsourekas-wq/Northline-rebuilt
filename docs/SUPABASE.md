@@ -12,13 +12,15 @@ Use two Postgres connection strings:
   deployments, use Supabase transaction pooler/Supavisor and include
   `pgbouncer=true`.
 - `DIRECT_URL`: Prisma CLI, migrations, seed scripts, admin tooling, backup,
-  and restore workflows. Use the direct database URL from Supabase Connect.
+  and restore workflows. Use Supavisor session mode on port 5432 when direct
+  IPv6 is unavailable, or the direct database URL when your environment
+  supports it.
 
 Example preview values:
 
 ```bash
-DATABASE_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require"
-DIRECT_URL="postgresql://postgres:password@db.project-ref.supabase.co:5432/postgres?sslmode=require"
+DATABASE_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:5432/postgres"
 NEXT_PUBLIC_APP_URL="https://northline-rebuild-preview.example"
 ```
 
@@ -33,7 +35,8 @@ pooled connection.
 2. Copy `.env.preview.example` into the Vercel preview environment.
 3. Replace `DATABASE_URL` with the Supabase transaction pooler URL and keep
    `pgbouncer=true`.
-4. Replace `DIRECT_URL` with the Supabase direct database URL.
+4. Replace `DIRECT_URL` with the Supabase session pooler URL, or the direct
+   database URL when your network supports it.
 5. Set `NEXT_PUBLIC_APP_URL` to the actual Vercel preview URL.
 6. Set `NORTHLINE_SECRET_ENCRYPTION_KEY` and
    `NORTHLINE_WEBSITE_CHAT_SECRET` to long random preview-only values.
@@ -63,5 +66,5 @@ shipping that surface.
   database that contains useful pilot data.
 - If Prisma reports prepared statement errors with the transaction pooler,
   confirm `DATABASE_URL` includes `pgbouncer=true`.
-- If Prisma migrations fail through the pooler, confirm `DIRECT_URL` is set and
-  that `prisma.config.ts` is loading it.
+- If Prisma migrations cannot reach `db.project-ref.supabase.co`, use the
+  Supavisor session pooler string on port 5432 for `DIRECT_URL`.

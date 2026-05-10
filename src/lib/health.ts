@@ -9,6 +9,24 @@ export type EnvironmentHealth = {
   strictProduction: boolean;
 };
 
+export type DatabaseHealth = {
+  ok: boolean;
+  reachable: boolean;
+  latencyMs: number | null;
+  schemaReady: boolean;
+  migrationsReady: boolean;
+  migrationsTable: "present" | "missing" | "unknown";
+  appliedMigrationCount: number | null;
+  failedMigrationCount: number | null;
+  missingTables: string[];
+};
+
+export const databaseReadinessTables = [
+  "Organization",
+  "User",
+  "Session",
+] as const;
+
 const alwaysRequired = ["DATABASE_URL", "NEXT_PUBLIC_APP_URL"] as const;
 const strictProductionRequired = [
   "NORTHLINE_SECRET_ENCRYPTION_KEY",
@@ -55,7 +73,7 @@ export function getRuntimeEnvironment(
 
 export function buildHealthPayload(input: {
   environment: EnvironmentHealth;
-  database: { ok: boolean; latencyMs: number | null };
+  database: DatabaseHealth;
   now?: Date;
   uptimeSeconds?: number;
 }) {
@@ -74,5 +92,53 @@ export function buildHealthPayload(input: {
       },
       database: input.database,
     },
+  };
+}
+
+export function buildDatabaseHealth(input: {
+  reachable: boolean;
+  latencyMs: number | null;
+  migrationsTableExists?: boolean;
+  appliedMigrationCount?: number | null;
+  failedMigrationCount?: number | null;
+  expectedTables?: Record<string, boolean>;
+}): DatabaseHealth {
+  const expectedTables = input.expectedTables ?? {};
+  const missingTables = Object.entries(expectedTables)
+    .filter(([, present]) => !present)
+    .map(([name]) => name)
+    .sort();
+  const migrationsTable = input.reachable
+    ? input.migrationsTableExists
+      ? "present"
+      : "missing"
+    : "unknown";
+  const appliedMigrationCount =
+    input.appliedMigrationCount === undefined
+      ? null
+      : input.appliedMigrationCount;
+  const failedMigrationCount =
+    input.failedMigrationCount === undefined ? null : input.failedMigrationCount;
+  const schemaReady =
+    input.reachable &&
+    Object.keys(expectedTables).length > 0 &&
+    missingTables.length === 0;
+  const migrationsReady =
+    input.reachable &&
+    migrationsTable === "present" &&
+    appliedMigrationCount !== null &&
+    appliedMigrationCount > 0 &&
+    failedMigrationCount === 0;
+
+  return {
+    ok: input.reachable && schemaReady && migrationsReady,
+    reachable: input.reachable,
+    latencyMs: input.latencyMs,
+    schemaReady,
+    migrationsReady,
+    migrationsTable,
+    appliedMigrationCount,
+    failedMigrationCount,
+    missingTables,
   };
 }

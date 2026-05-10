@@ -1,7 +1,18 @@
 import type { MetadataRoute } from "next";
 import { getPublicAppUrl } from "@/lib/app-url";
 
-const publicRoutes = ["/", "/pricing", "/about", "/contact", "/privacy", "/terms"];
+const publicRoutes = [
+  "/",
+  "/solutions",
+  "/how-it-works",
+  "/industries",
+  "/destinations",
+  "/pricing",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const appUrl = getPublicAppUrl();

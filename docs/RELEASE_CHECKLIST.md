@@ -12,7 +12,8 @@ separate cutover task explicitly approves it.
 - [ ] Confirm no `northline.ai` production-domain changes are included.
 - [ ] Confirm required environment variables are set for the target environment.
 - [ ] Confirm `DATABASE_URL` points to the rebuild Supabase pooler only.
-- [ ] Confirm `DIRECT_URL` points to the rebuild Supabase direct database only.
+- [ ] Confirm `DIRECT_URL` points to the rebuild Supabase session/direct URL
+  only.
 - [ ] Confirm `DATABASE_URL` includes `pgbouncer=true` when using the
   transaction pooler.
 - [ ] Confirm `NORTHLINE_SECRET_ENCRYPTION_KEY` is set before testing stored

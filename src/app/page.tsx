@@ -3,9 +3,9 @@ import { MarketingPage } from "@/components/marketing/marketing-page";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Inbound lead handling for chat and messaging",
+  title: "Never lose an inbound lead again",
   description:
-    "Northline replies to inbound leads, asks follow-up questions, suggests booking, and routes clean lead data to your team.",
+    "Northline captures, qualifies, books, and routes inbound leads from website chat and messaging channels.",
   path: "/",
 });
 

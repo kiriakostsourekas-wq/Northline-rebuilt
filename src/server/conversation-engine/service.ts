@@ -11,7 +11,6 @@ import {
   resolveAutomaticHandoff,
 } from "@/lib/handoff/rules";
 import { safeErrorMessage } from "@/lib/security/logging";
-import { assembleBusinessContextBundle } from "@/lib/knowledge/context";
 import type { BusinessContextRecord } from "@/lib/knowledge/types";
 import { advanceBookingWorkflow } from "@/server/booking/service";
 import { createPrismaChannelRepository } from "@/server/channels/prisma-channel-repository";
@@ -19,6 +18,7 @@ import { ensureDefaultQualificationPlaybook } from "@/server/conversation-engine
 import { triggerLeadExport } from "@/server/destinations/service";
 import { getPrismaClient } from "@/server/db";
 import { requestHandoff } from "@/server/handoff/service";
+import { assembleBusinessContextForConversation } from "@/server/knowledge/retrieval";
 
 export async function runConversationEngineForInbound(input: {
   organizationId: string;
@@ -101,7 +101,8 @@ export async function runConversationEngineForInbound(input: {
       prisma,
     }),
   ]);
-  const businessContext = assembleBusinessContextBundle({
+  const { bundle: businessContext } = await assembleBusinessContextForConversation({
+    organizationId: input.organizationId,
     workspace: {
       name: conversation.organization.name,
       websiteUrl: conversation.organization.websiteUrl,
@@ -110,6 +111,9 @@ export async function runConversationEngineForInbound(input: {
       languageMode: conversation.organization.languageMode,
     },
     items: businessContextItems.map(mapBusinessContextItem),
+    query: latestInbound.rawBody ?? latestInbound.displayBody ?? latestInbound.body,
+    preferredLocale: conversation.lead.preferredLocale,
+    topK: 6,
   });
   const decision = await runConversationEngineWithLlm({
     workspace: {
@@ -169,6 +173,19 @@ export async function runConversationEngineForInbound(input: {
       confidence: decision.confidence,
       missingFields: decision.missingFields,
       shouldEscalate: decision.shouldEscalate,
+      retrieval: businessContext.retrieval
+        ? {
+            provider: businessContext.retrieval.provider,
+            hitCount: businessContext.retrieval.hits.length,
+            hits: businessContext.retrieval.hits.map((hit) => ({
+              chunkId: hit.chunkId,
+              itemId: hit.itemId,
+              section: hit.section,
+              score: hit.score,
+              rank: hit.rank,
+            })),
+          }
+        : undefined,
       handoff: automaticHandoff.shouldHandoff
         ? {
             reason: automaticHandoff.reason,

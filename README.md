@@ -83,8 +83,9 @@ Supabase preview databases are supported through a two-URL setup:
 
 - `DATABASE_URL` is used by the running app. Use the Supabase transaction
   pooler/Supavisor URL with `pgbouncer=true`.
-- `DIRECT_URL` is used by Prisma CLI commands and seed scripts. Use the direct
-  database URL from Supabase Connect.
+- `DIRECT_URL` is used by Prisma CLI commands and seed scripts. Use Supavisor
+  session mode on port 5432 when direct IPv6 is unavailable, or the direct
+  database URL when your environment supports it.
 
 Detailed setup notes live in `docs/SUPABASE.md`.
 
@@ -103,8 +104,8 @@ No live database is required for lint, typecheck, unit tests, or Next.js build i
 To exercise sign-up, sign-in, onboarding, and the protected dashboard locally,
 run a local PostgreSQL database with `DATABASE_URL` pointed at the rebuild
 database only, keep `DIRECT_URL` pointed at the same local database or at the
-Supabase direct URL, then run the Prisma migration command for this repository.
-Do not reuse production credentials.
+Supabase session/direct URL, then run the Prisma migration command for this
+repository. Do not reuse production credentials.
 
 ## Checks
 

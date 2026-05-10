@@ -17,6 +17,7 @@ import type {
 } from "@/lib/knowledge/types";
 import { writeAuditLog } from "@/server/audit/service";
 import { getPrismaClient } from "@/server/db";
+import { refreshKnowledgeItemIndex } from "@/server/knowledge/indexing";
 
 export async function saveKnowledgeItemAction(formData: FormData) {
   const { user, organization } = await requireKnowledgeManager();
@@ -99,6 +100,11 @@ export async function saveKnowledgeItemAction(formData: FormData) {
       });
     });
 
+    await refreshKnowledgeIndexAfterMutation({
+      organizationId: organization.id,
+      itemId: existing.id,
+      reason: "Knowledge item saved",
+    });
     revalidatePath("/app/knowledge");
     redirect(`/app/knowledge?section=${section}&item=${itemId}&notice=item-saved`);
   }
@@ -128,6 +134,11 @@ export async function saveKnowledgeItemAction(formData: FormData) {
       section: validation.value.section,
       status: validation.value.status,
     },
+  });
+  await refreshKnowledgeIndexAfterMutation({
+    organizationId: organization.id,
+    itemId: created.id,
+    reason: "Knowledge item created",
   });
 
   revalidatePath("/app/knowledge");
@@ -176,6 +187,11 @@ export async function publishKnowledgeItemAction(formData: FormData) {
     });
   });
 
+  await refreshKnowledgeIndexAfterMutation({
+    organizationId: organization.id,
+    itemId: item.id,
+    reason: "Knowledge item published",
+  });
   revalidatePath("/app/knowledge");
   redirect(`/app/knowledge?section=${item.section}&item=${item.id}&notice=item-published`);
 }
@@ -221,6 +237,11 @@ export async function archiveKnowledgeItemAction(formData: FormData) {
     });
   });
 
+  await refreshKnowledgeIndexAfterMutation({
+    organizationId: organization.id,
+    itemId: item.id,
+    reason: "Knowledge item archived",
+  });
   revalidatePath("/app/knowledge");
   redirect(`/app/knowledge?section=${item.section}&notice=item-archived`);
 }
@@ -326,6 +347,23 @@ function getOptionalString(formData: FormData, key: string) {
 
 function toJson(value: Record<string, unknown>) {
   return value as Prisma.InputJsonValue;
+}
+
+async function refreshKnowledgeIndexAfterMutation(input: {
+  organizationId: string;
+  itemId: string;
+  reason: string;
+}) {
+  try {
+    await refreshKnowledgeItemIndex(input);
+  } catch (error) {
+    console.warn("northline.knowledge.index_refresh_failed", {
+      organizationId: input.organizationId,
+      itemId: input.itemId,
+      reason: input.reason,
+      error: error instanceof Error ? error.message : "Unknown indexing error",
+    });
+  }
 }
 
 function toItemSnapshot(item: {

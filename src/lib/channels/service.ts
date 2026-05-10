@@ -180,6 +180,8 @@ export async function sendOutboundMessage(
     organizationId: input.organizationId,
     channelId: conversation.channelId,
     conversationId: conversation.id,
+    channelExternalAccountId: conversation.channelExternalAccountId,
+    channelSettings: conversation.channelSettings,
     externalThreadId: conversation.externalThreadId,
     body: input.body,
     idempotencyKey,

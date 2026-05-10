@@ -22,15 +22,15 @@ export function WebsiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <ButtonLink
-            href="/contact"
+            href="/#product"
             tone="secondary"
             size="sm"
             className="hidden sm:inline-flex"
             analyticsEvent={marketingEvents.ctaClick}
-            analyticsLabel={cta.joinWaitlist}
+            analyticsLabel={cta.seeProduct}
             analyticsLocation="header"
           >
-            {cta.joinWaitlist}
+            {cta.seeProduct}
           </ButtonLink>
           <ButtonLink
             href="/contact?intent=demo"

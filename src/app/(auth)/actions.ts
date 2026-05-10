@@ -4,6 +4,10 @@ import { randomBytes } from "node:crypto";
 import { redirect } from "next/navigation";
 import { createSession, hashSessionToken } from "@/lib/auth/session";
 import {
+  authServiceUnavailableMessage,
+  isAuthServiceFailure,
+} from "@/lib/auth/service-errors";
+import {
   hashPassword,
   validatePassword,
   verifyPassword,
@@ -12,6 +16,7 @@ import { getOnboardingStepByEnum } from "@/lib/onboarding";
 import { createWorkspaceForOwner } from "@/lib/workspace";
 import { getPrismaClient } from "@/server/db";
 import { rateLimitByRequest } from "@/lib/security/request";
+import { safeErrorMessage } from "@/lib/security/logging";
 import { writeAuditLog } from "@/server/audit/service";
 
 export async function signUpAction(formData: FormData) {
@@ -80,26 +85,31 @@ export async function signInAction(formData: FormData) {
     redirectWithError("/sign-in", "Enter your email and password.");
   }
 
-  const prisma = getPrismaClient();
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await handleSignInServiceFailure(async () => {
+    const prisma = getPrismaClient();
+    return prisma.user.findUnique({ where: { email } });
+  });
 
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     redirectWithError("/sign-in", "Invalid email or password.");
   }
 
-  await createSession(user.id);
-  await writeAuditLog({
-    organizationId: user.organizationId,
-    actorUserId: user.id,
-    action: "AUTH_SIGN_IN",
-    targetType: "User",
-    targetId: user.id,
-    metadata: { method: "password" },
-  });
+  const organization = await handleSignInServiceFailure(async () => {
+    const prisma = getPrismaClient();
+    await createSession(user.id);
+    await writeAuditLog({
+      organizationId: user.organizationId,
+      actorUserId: user.id,
+      action: "AUTH_SIGN_IN",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { method: "password" },
+    });
 
-  const organization = await prisma.organization.findUnique({
-    where: { id: user.organizationId },
-    include: { onboarding: true },
+    return prisma.organization.findUnique({
+      where: { id: user.organizationId },
+      include: { onboarding: true },
+    });
   });
 
   if (!organization?.onboarding?.completedAt) {
@@ -155,6 +165,21 @@ export async function requestPasswordResetAction(formData: FormData) {
 
 function redirectWithError(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
+}
+
+async function handleSignInServiceFailure<T>(
+  operation: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isAuthServiceFailure(error)) throw error;
+
+    console.error("northline.auth.sign_in_unavailable", {
+      message: safeErrorMessage(error),
+    });
+    redirectWithError("/sign-in", authServiceUnavailableMessage);
+  }
 }
 
 function isEmail(value: string) {

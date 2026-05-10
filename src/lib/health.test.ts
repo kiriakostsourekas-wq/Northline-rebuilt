@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildHealthPayload, getEnvironmentHealth } from "@/lib/health";
+import {
+  buildDatabaseHealth,
+  buildHealthPayload,
+  getEnvironmentHealth,
+} from "@/lib/health";
 
 describe("health readiness helpers", () => {
   it("requires only core runtime vars outside strict production", () => {
@@ -55,10 +59,75 @@ describe("health readiness helpers", () => {
         strictProduction: false,
         missing: [],
       },
-      database: { ok: false, latencyMs: null },
+      database: buildDatabaseHealth({
+        reachable: false,
+        latencyMs: null,
+      }),
     });
 
     expect(payload.status).toBe("degraded");
     expect(payload.checks.database.ok).toBe(false);
+  });
+
+  it("does not treat a reachable database as ready when Prisma schema is missing", () => {
+    const database = buildDatabaseHealth({
+      reachable: true,
+      latencyMs: 18,
+      migrationsTableExists: false,
+      appliedMigrationCount: null,
+      failedMigrationCount: null,
+      expectedTables: {
+        Organization: false,
+        User: false,
+        Session: false,
+      },
+    });
+
+    expect(database.ok).toBe(false);
+    expect(database.reachable).toBe(true);
+    expect(database.schemaReady).toBe(false);
+    expect(database.migrationsReady).toBe(false);
+    expect(database.migrationsTable).toBe("missing");
+    expect(database.missingTables).toEqual(["Organization", "Session", "User"]);
+  });
+
+  it("marks migrations as not ready when failed migrations are recorded", () => {
+    const database = buildDatabaseHealth({
+      reachable: true,
+      latencyMs: 24,
+      migrationsTableExists: true,
+      appliedMigrationCount: 0,
+      failedMigrationCount: 1,
+      expectedTables: {
+        Organization: true,
+        User: true,
+        Session: true,
+      },
+    });
+
+    expect(database.ok).toBe(false);
+    expect(database.schemaReady).toBe(true);
+    expect(database.migrationsReady).toBe(false);
+    expect(database.failedMigrationCount).toBe(1);
+  });
+
+  it("marks database readiness ok only when schema and migrations are ready", () => {
+    const database = buildDatabaseHealth({
+      reachable: true,
+      latencyMs: 12,
+      migrationsTableExists: true,
+      appliedMigrationCount: 11,
+      failedMigrationCount: 0,
+      expectedTables: {
+        Organization: true,
+        User: true,
+        Session: true,
+      },
+    });
+
+    expect(database.ok).toBe(true);
+    expect(database.schemaReady).toBe(true);
+    expect(database.migrationsReady).toBe(true);
+    expect(database.missingTables).toEqual([]);
   });
 });

@@ -5,9 +5,10 @@ export const siteConfig = {
   description:
     "Inbound lead handling for website chat and messaging channels.",
   nav: [
-    { label: "Product", href: "/#product" },
-    { label: "How it works", href: "/#how-it-works" },
-    { label: "Channels", href: "/#channels" },
+    { label: "Solutions", href: "/solutions" },
+    { label: "How it works", href: "/how-it-works" },
+    { label: "Industries", href: "/industries" },
+    { label: "Destinations", href: "/destinations" },
     { label: "Pricing", href: "/pricing" },
     { label: "About", href: "/about" },
   ],
@@ -19,6 +20,10 @@ export const siteConfig = {
         title: "Product",
         links: [
           { label: "Overview", href: "/" },
+          { label: "Solutions", href: "/solutions" },
+          { label: "How it works", href: "/how-it-works" },
+          { label: "Industries", href: "/industries" },
+          { label: "Destinations", href: "/destinations" },
           { label: "Pricing", href: "/pricing" },
           { label: "Contact", href: "/contact" },
           { label: "Style guide", href: "/style-guide" },
@@ -48,92 +53,102 @@ export const cta = {
 export const homePage = {
   hero: {
     eyebrow: "Inbound lead handling for chat and messaging",
-    title: "Turn inbound messages into qualified next steps.",
+    title: "Never lose an inbound lead again.",
     body:
-      "Northline helps businesses reply to inbound leads, ask the right follow-up questions, suggest booking, and route conversations to a human when needed. Greek and English are built in.",
-    bullets: [
-      "Website chat now, messaging-channel ready",
-      "Greek and English lead flows",
-      "Structured handoff data for booking, CRM, or sales follow-up",
+      "Northline captures, qualifies, and routes inbound leads from website chat and messaging channels. It replies quickly, asks the right follow-up questions, and hands off with context.",
+  },
+  proof: {
+    items: [
+      {
+        title: "Greek and English",
+        body: "Reply and qualify in both launch languages.",
+      },
+      {
+        title: "Website chat + messaging",
+        body: "One workflow for WhatsApp, Instagram, and Messenger.",
+      },
+      {
+        title: "Human handoff included",
+        body: "Escalate with source, summary, and missing details.",
+      },
+      {
+        title: "Booking and routing",
+        body: "Send qualified leads to calendar, CRM, or webhook paths.",
+      },
     ],
   },
-  trust: {
-    eyebrow: "What Northline does",
-    title: "Three jobs before a salesperson takes over.",
-    metrics: [
-      {
-        value: "Reply",
-        label: "Answer common questions from approved business details.",
-      },
-      {
-        value: "Qualify",
-        label: "Collect fit, urgency, location, and contact details consistently.",
-      },
-      {
-        value: "Route",
-        label: "Suggest booking or hand off to the right person with context.",
-      },
-    ],
-    proof: [
-      "Source, language, consent, and owner stay attached to each lead",
-      "Low-confidence or sensitive conversations can be escalated",
-      "Lead data is prepared for booking, CRM, webhook, or internal follow-up",
-    ],
-  },
-  problemSolution: {
+  problem: {
     eyebrow: "Problem",
-    title: "Good leads go cold when every inbox has a different process.",
-    problem:
-      "Most businesses do not lose inbound demand because people do not care. They lose it because replies wait, questions vary by person, and the next step is unclear.",
-    solution:
-      "Northline gives each new message the same path: reply, qualify, recommend a next step, and keep the data ready for the team.",
-    points: [
-      "Reply to website-chat leads while interest is still fresh",
-      "Ask only the follow-up questions needed for fit and urgency",
-      "Suggest booking when the lead is ready",
-      "Route edge cases to a human with a short summary",
+    title: "Most leads are lost between first message and follow-up.",
+    body:
+      "Inbound demand rarely fails at the form submit. It leaks after the message arrives, when response time, qualification, and ownership are unclear.",
+    items: [
+      {
+        title: "No response after hours",
+        body: "High-intent leads wait until the team is back online.",
+      },
+      {
+        title: "Slow qualification",
+        body: "The same basic questions get asked manually every time.",
+      },
+      {
+        title: "Repeated follow-up",
+        body: "Context gets copied between inboxes, notes, and calendars.",
+      },
+      {
+        title: "No clear next step",
+        body: "Ready leads are not always booked, routed, or owned.",
+      },
     ],
   },
   howItWorks: {
-    eyebrow: "Workflow",
-    title: "From first message to booked or handed off.",
+    eyebrow: "How it works",
+    title: "A simple path from first message to next action.",
     steps: [
       {
         title: "Capture",
         body:
-          "Pull website chat and messaging intake into one lead flow.",
+          "Bring every inbound message into one lead workflow with source, language, and consent context.",
       },
       {
         title: "Reply",
         body:
-          "Use the business knowledge you provide to answer common questions.",
+          "Answer quickly in Greek or English using the business details you approve.",
       },
       {
         title: "Qualify",
         body:
-          "Ask for the missing details: need, timing, location, budget, and contact permission.",
+          "Ask only the follow-up questions needed for fit, urgency, contact, and booking readiness.",
       },
       {
-        title: "Move",
+        title: "Book or hand off",
         body:
-          "Send ready leads toward booking, CRM/webhook sync, or a human owner.",
+          "Suggest a booking path or route the conversation to a human with a short summary.",
       },
     ],
   },
   channels: {
     eyebrow: "Channels",
-    title: "Start with website chat. Extend to the channels buyers already use.",
+    title: "One lead workflow across the channels buyers already use.",
     body:
-      "The rebuild focuses on website chat first, with clear abstractions for WhatsApp, Instagram, Messenger, Viber, email, API intake, and CRM/webhook events.",
+      "Northline keeps the qualification path consistent as leads arrive from chat and messaging channels.",
     items: [
-      "Website chat",
-      "WhatsApp",
-      "Instagram",
-      "Facebook Messenger",
-      "Viber",
-      "Email",
-      "API intake",
-      "CRM/webhook sync",
+      {
+        title: "Website chat",
+        body: "Capture visitors while intent is active.",
+      },
+      {
+        title: "WhatsApp",
+        body: "Continue sales conversations in a familiar channel.",
+      },
+      {
+        title: "Instagram",
+        body: "Turn social messages into structured lead records.",
+      },
+      {
+        title: "Messenger",
+        body: "Keep Facebook inquiries in the same workflow.",
+      },
     ],
   },
   features: {
@@ -175,10 +190,10 @@ export const homePage = {
     ],
   },
   finalCta: {
-    eyebrow: "See it on your workflow",
-    title: "Show us where your inbound leads arrive.",
+    eyebrow: "Preview walkthrough",
+    title: "See how Northline fits your lead workflow.",
     body:
-      "Share your business type, lead sources, and what should happen after a qualified conversation. We will shape the demo around that path.",
+      "Share the channels where leads arrive and what should happen after qualification. We will shape the demo around your actual handoff path.",
   },
 } as const;
 

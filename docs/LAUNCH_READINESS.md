@@ -97,8 +97,8 @@ Error/loading/navigation:
 ### Must Fix Before Pilot
 
 - Provision a dedicated Supabase preview PostgreSQL database, configure
-  `DATABASE_URL` for pooled runtime traffic and `DIRECT_URL` for migrations,
-  then run migrations against it.
+  `DATABASE_URL` for pooled runtime traffic and session/direct `DIRECT_URL` for
+  migrations, then run migrations against it.
 - Deploy to a dedicated Vercel preview project and verify `/api/health`.
 - Connect email delivery or remove password reset from pilot-facing copy.
 - Decide consent wording and privacy/legal terms for actual pilot users.

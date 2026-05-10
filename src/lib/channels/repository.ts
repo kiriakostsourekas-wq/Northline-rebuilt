@@ -21,6 +21,8 @@ export type ConversationRecord = {
 
 export type OutboundConversationRecord = ConversationRecord & {
   channelType: ChannelTypeValue | null;
+  channelExternalAccountId?: string | null;
+  channelSettings?: Record<string, unknown> | null;
 };
 
 export type ChannelRepository = {

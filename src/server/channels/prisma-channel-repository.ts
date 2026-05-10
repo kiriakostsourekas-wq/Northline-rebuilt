@@ -293,6 +293,8 @@ export function createPrismaChannelRepository(
         channelId: conversation.channelId,
         externalThreadId: conversation.externalThreadId,
         channelType: conversation.channel?.type ?? null,
+        channelExternalAccountId: conversation.channel?.externalAccountId ?? null,
+        channelSettings: toObject(conversation.channel?.settings),
       };
     },
 
@@ -399,4 +401,10 @@ function truncatePreview(body: string) {
 
 function toJson(value: Record<string, unknown>) {
   return value as Prisma.InputJsonValue;
+}
+
+function toObject(value: Prisma.JsonValue | null | undefined) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }

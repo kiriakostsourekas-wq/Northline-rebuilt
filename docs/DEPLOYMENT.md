@@ -22,8 +22,8 @@ Local development:
 
 - Copy `.env.example` to `.env.local` or `.env`.
 - Use a local or disposable PostgreSQL database.
-- Keep `DIRECT_URL` pointed at the same local database, or at the direct
-  Supabase database URL when validating against Supabase.
+- Keep `DIRECT_URL` pointed at the same local database, or at the Supabase
+  session/direct URL when validating against Supabase.
 - Run `npm run db:migrate:dev` when actively creating migrations.
 - Run `npm run db:seed:dev` only against disposable local/preview databases.
 
@@ -34,8 +34,8 @@ Preview:
 - Use a Supabase preview database dedicated to this rebuild.
 - Set `DATABASE_URL` to the Supabase transaction pooler URL with
   `pgbouncer=true`.
-- Set `DIRECT_URL` to the direct Supabase database URL for migrations and
-  seed/admin commands.
+- Set `DIRECT_URL` to the Supabase session pooler URL for migrations and
+  seed/admin commands when direct IPv6 is unavailable.
 - Run `npm run db:migrate:deploy` against the preview database before or during
   preview release validation.
 
@@ -54,7 +54,7 @@ Future production:
 | Variable | Local | Preview | Future production | Notes |
 | --- | --- | --- | --- | --- |
 | `DATABASE_URL` | Required for app flows | Required | Required | Runtime PostgreSQL connection string for this rebuild only. Use the Supabase transaction pooler with `pgbouncer=true` in preview/serverless environments. |
-| `DIRECT_URL` | Recommended | Required | Required | Direct PostgreSQL connection string for Prisma CLI migrations, seed scripts, backup, restore, and admin tooling. |
+| `DIRECT_URL` | Recommended | Required | Required | Session/direct PostgreSQL connection string for Prisma CLI migrations, seed scripts, backup, restore, and admin tooling. |
 | `NEXT_PUBLIC_APP_URL` | Required | Required | Required | Public URL for links/cookies. Public browser value. |
 | `NORTHLINE_WEBSITE_CHAT_SECRET` | Optional | Recommended | Required | HMAC secret for website-chat webhooks. |
 | `NORTHLINE_SECRET_ENCRYPTION_KEY` | Optional | Required for destination secrets | Required | Stable encryption key for outbound destination secrets. |
@@ -113,7 +113,8 @@ Preview release:
 1. Back up or snapshot the preview database if it contains useful test data.
 2. Set `DATABASE_URL` to the Supabase transaction pooler URL with
    `pgbouncer=true`.
-3. Set `DIRECT_URL` to the direct Supabase database URL.
+3. Set `DIRECT_URL` to the Supabase session pooler URL, or the direct database
+   URL when your network supports it.
 4. Run `npm run db:migrate:deploy`.
 5. Deploy a Vercel preview from the branch.
 6. Check `/api/health`, sign-in, dashboard, inbox, booking, destinations, and
@@ -231,8 +232,8 @@ Run:
 
 ```bash
 docker run --rm -p 3000:3000 \
-  -e DATABASE_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require" \
-  -e DIRECT_URL="postgresql://postgres:password@db.project-ref.supabase.co:5432/postgres?sslmode=require" \
+  -e DATABASE_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true" \
+  -e DIRECT_URL="postgresql://postgres.project-ref:password@aws-0-region.pooler.supabase.com:5432/postgres" \
   -e NEXT_PUBLIC_APP_URL="http://localhost:3000" \
   -e NORTHLINE_SECRET_ENCRYPTION_KEY="local-container-key" \
   -e NORTHLINE_WEBSITE_CHAT_SECRET="local-container-webhook-secret" \

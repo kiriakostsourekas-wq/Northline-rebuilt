@@ -89,7 +89,32 @@ export type BusinessContextBundle = {
       locale: "EN" | "EL" | null;
       text: string;
       structuredData: Record<string, unknown>;
+      retrievalScore?: number;
     }>;
   }>;
+  retrieval?: BusinessContextRetrievalPacket;
   assistantContext: string;
+};
+
+export type BusinessContextRetrievalPacket = {
+  query: string;
+  generatedAt: string;
+  provider: {
+    name: string;
+    model?: string;
+    enabled: boolean;
+    used: boolean;
+    fallbackReason?: string;
+  };
+  hits: Array<{
+    chunkId: string;
+    itemId: string;
+    section: BusinessContextSectionValue;
+    title: string;
+    locale: "EN" | "EL" | null;
+    text: string;
+    score: number;
+    rank: number;
+    reasons: string[];
+  }>;
 };

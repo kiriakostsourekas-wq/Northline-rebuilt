@@ -52,7 +52,10 @@ export type NormalizedInboundEvent = {
 export type WebhookVerificationInput = {
   headers: Headers;
   payload: Record<string, unknown>;
+  query?: URLSearchParams;
   rawBody?: string;
+  channelSettings?: Record<string, unknown> | null;
+  externalAccountId?: string | null;
 };
 
 export type WebhookVerificationResult =
@@ -63,12 +66,16 @@ export type NormalizeInboundInput = {
   organizationId: string;
   payload: Record<string, unknown>;
   headers: Headers;
+  channelSettings?: Record<string, unknown> | null;
+  externalAccountId?: string | null;
 };
 
 export type OutboundSendInput = {
   organizationId: string;
   channelId: string;
   conversationId: string;
+  channelExternalAccountId?: string | null;
+  channelSettings?: Record<string, unknown> | null;
   externalThreadId: string;
   body: string;
   idempotencyKey: string;
@@ -95,6 +102,7 @@ export type ChannelAdapter = {
   configured: boolean;
   verifyWebhook(input: WebhookVerificationInput): WebhookVerificationResult;
   normalizeInbound(input: NormalizeInboundInput): NormalizedInboundEvent;
+  normalizeInboundBatch?(input: NormalizeInboundInput): NormalizedInboundEvent[];
   sendMessage(input: OutboundSendInput): Promise<OutboundSendResult>;
 };
 
