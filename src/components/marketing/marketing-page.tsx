@@ -1,54 +1,47 @@
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
+  Building2,
   CalendarCheck,
-  CalendarX2,
-  Camera,
   CheckCircle2,
-  ClipboardList,
   Clock3,
-  DatabaseZap,
-  Handshake,
-  Inbox,
-  Languages,
+  ClipboardList,
+  Hotel,
   MessageCircle,
   MessagesSquare,
-  MonitorSmartphone,
-  PhoneCall,
   Route,
   Send,
+  ShieldCheck,
+  Stethoscope,
+  Store,
 } from "lucide-react";
 import { Badge } from "@/components/marketing/badge";
 import { CrossingLines } from "@/components/marketing/crossing-lines";
-import { ProductVisual } from "@/components/marketing/product-visual";
+import {
+  LeadWorkflowDemo,
+  TrustStrip,
+} from "@/components/marketing/lead-workflow-demo";
+import { PainpointCalculator } from "@/components/marketing/painpoint-calculator";
+import { ProductDemoStage } from "@/components/marketing/product-demo-stage";
 import { Section, SectionHeader } from "@/components/marketing/section";
 import { WebsiteFooter } from "@/components/marketing/website-footer";
 import { WebsiteHeader } from "@/components/marketing/website-header";
 import { ButtonLink } from "@/components/ui/button-link";
-import { marketingEvents } from "@/lib/marketing-events";
 import { cta, homePage } from "@/content/website";
 import type { Locale } from "@/content/marketing";
+import { marketingEvents } from "@/lib/marketing-events";
 
-const proofIcons: LucideIcon[] = [
-  Languages,
-  MessagesSquare,
-  Handshake,
-  DatabaseZap,
-];
-
-const problemIcons: LucideIcon[] = [Clock3, ClipboardList, Send, CalendarX2];
+const painIcons: LucideIcon[] = [Clock3, MessageCircle, MessagesSquare, Route];
 const workflowIcons: LucideIcon[] = [
-  Inbox,
-  MessageCircle,
+  MessagesSquare,
   ClipboardList,
   CalendarCheck,
+  Send,
 ];
-const channelIcons: LucideIcon[] = [
-  MonitorSmartphone,
-  PhoneCall,
-  Camera,
-  MessagesSquare,
-];
+const industryIcons: LucideIcon[] = [Stethoscope, Building2, Store, Hotel];
+const heroBodyLines = homePage.hero.body
+  .split(". ")
+  .map((line) => (line.endsWith(".") ? line : `${line}.`));
 
 type MarketingPageProps = {
   locale?: Locale;
@@ -56,25 +49,29 @@ type MarketingPageProps = {
 
 export function MarketingPage({ locale = "en" }: MarketingPageProps) {
   return (
-    <main className="min-h-screen bg-canvas text-ink">
+    <main className="min-h-screen bg-canvas text-ink" data-locale={locale}>
       <WebsiteHeader />
 
       <section className="relative isolate overflow-hidden border-b border-border bg-canvas">
         <CrossingLines fade="hero" className="-z-10" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-28 border-t border-border bg-gradient-to-b from-transparent to-subtle/75" />
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-[var(--space-page)] py-14 sm:py-16 lg:min-h-[760px] lg:grid-cols-[0.94fr_1.06fr] lg:py-20">
-          <div className="min-w-0">
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-32 border-t border-border bg-gradient-to-b from-transparent to-subtle/75" />
+        <div className="mx-auto grid max-w-7xl gap-10 overflow-hidden px-[var(--space-page)] py-12 sm:py-16 lg:min-h-[760px] lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:py-20">
+          <div className="min-w-0 max-w-full sm:w-auto">
             <Badge
               tone="teal"
-              className="max-w-full whitespace-normal text-left leading-5"
+              className="mobile-hero-measure whitespace-normal text-left leading-5 sm:w-auto sm:max-w-full"
             >
               {homePage.hero.eyebrow}
             </Badge>
-            <h1 className="mt-7 max-w-4xl text-title-lg font-black leading-[0.98] text-balance sm:text-display lg:text-display-xl">
+            <h1 className="mobile-hero-measure mt-7 text-title font-black leading-[0.98] text-balance sm:w-auto sm:max-w-4xl sm:text-title-lg lg:text-display-xl">
               {homePage.hero.title}
             </h1>
-            <p className="mt-6 max-w-2xl text-body-lg leading-[var(--line-height-copy)] text-muted">
-              {homePage.hero.body}
+            <p className="mobile-hero-measure mt-6 whitespace-normal break-words text-body leading-[var(--line-height-copy)] text-muted sm:w-auto sm:max-w-2xl sm:text-body-lg">
+              {heroBodyLines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink
@@ -89,70 +86,74 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
                 {cta.requestDemo}
               </ButtonLink>
               <ButtonLink
-                href="/#how-it-works"
+                href="/#demo"
                 tone="secondary"
                 icon={Route}
                 size="lg"
                 className="w-full sm:w-auto"
                 analyticsEvent={marketingEvents.ctaClick}
-                analyticsLabel={cta.seeWorkflow}
+                analyticsLabel="Watch workflow"
                 analyticsLocation="home_hero"
               >
-                See how it works
+                Watch workflow
               </ButtonLink>
+            </div>
+            <div className="mt-8 grid gap-3 text-caption font-bold text-muted sm:grid-cols-3">
+              <div className="rounded-md border border-border bg-raised/75 p-3">
+                Preview workflow
+              </div>
+              <div className="rounded-md border border-border bg-raised/75 p-3">
+                Synthetic demo data
+              </div>
+              <div className="rounded-md border border-border bg-raised/75 p-3">
+                Greek + English
+              </div>
             </div>
           </div>
 
-          <ProductVisual locale={locale} />
-        </div>
-      </section>
-
-      <section
-        aria-label="Northline proof points"
-        className="border-b border-border bg-canvas"
-      >
-        <div className="mx-auto max-w-7xl px-[var(--space-page)] py-6">
-          <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-            {homePage.proof.items.map((item, index) => {
-              const Icon = proofIcons[index] ?? CheckCircle2;
-
-              return (
-                <article key={item.title} className="bg-raised p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-teal-soft text-teal-strong">
-                      <Icon aria-hidden="true" className="size-4" />
-                    </span>
-                    <div>
-                      <h2 className="text-body-sm font-black">{item.title}</h2>
-                      <p className="mt-1 text-caption leading-5 text-muted">
-                        {item.body}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="mobile-hero-measure min-w-0 sm:max-w-none">
+            <ProductDemoStage
+              title={homePage.demo.title}
+              body={homePage.demo.body}
+              posterAlt={homePage.demo.posterAlt}
+            />
           </div>
         </div>
       </section>
 
-      <Section id="product" tone="raised">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <Section id="demo" tone="raised" tight>
+        <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
           <SectionHeader
-            eyebrow={homePage.problem.eyebrow}
-            title={homePage.problem.title}
-            body={homePage.problem.body}
+            eyebrow={homePage.demo.eyebrow}
+            title="The product story should be visible before the pitch."
+            body="A visitor asks. Northline replies, qualifies, and prepares the next action while the lead is still warm."
           />
+          <LeadWorkflowDemo />
+        </div>
+      </Section>
+
+      <Section id="product">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <SectionHeader
+              eyebrow={homePage.problem.eyebrow}
+              title={homePage.problem.title}
+              body={homePage.problem.body}
+            />
+            <div className="mt-8">
+              <PainpointCalculator />
+            </div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {homePage.problem.items.map((item, index) => {
-              const Icon = problemIcons[index] ?? CheckCircle2;
+              const Icon = painIcons[index] ?? CheckCircle2;
 
               return (
                 <article
                   key={item.title}
-                  className="rounded-md border border-border bg-canvas p-6 shadow-card"
+                  className="rounded-md border border-border bg-raised p-6 shadow-card"
                 >
-                  <span className="grid size-10 place-items-center rounded-md bg-slate-soft text-slate">
+                  <span className="grid size-10 place-items-center rounded-md bg-rose-soft text-rose">
                     <Icon aria-hidden="true" className="size-5" />
                   </span>
                   <h3 className="mt-5 text-title-sm font-black leading-tight">
@@ -168,7 +169,7 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
         </div>
       </Section>
 
-      <Section id="how-it-works">
+      <Section id="how-it-works" tone="subtle">
         <SectionHeader
           eyebrow={homePage.howItWorks.eyebrow}
           title={homePage.howItWorks.title}
@@ -201,34 +202,42 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
         </div>
       </Section>
 
-      <Section
-        id="channels"
-        tone="subtle"
-        className="relative isolate overflow-hidden"
-        innerClassName="relative"
-      >
-        <CrossingLines className="-z-10 opacity-70" />
-        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <Section aria-label="Northline trust points">
+        <SectionHeader
+          eyebrow="Trust"
+          title="Credibility starts with being clear about what is real."
+          body="The homepage should sell the workflow without pretending there are already public customer wins. The demo is preview-labeled, synthetic, and grounded in the product we are building."
+          align="center"
+        />
+        <div className="mt-12">
+          <TrustStrip />
+        </div>
+      </Section>
+
+      <Section id="industries" tone="raised">
+        <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
           <SectionHeader
-            eyebrow={homePage.channels.eyebrow}
-            title={homePage.channels.title}
-            body={homePage.channels.body}
+            eyebrow={homePage.industries.eyebrow}
+            title={homePage.industries.title}
+            body={homePage.industries.body}
           />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {homePage.channels.items.map((channel, index) => {
-              const Icon = channelIcons[index] ?? MessageCircle;
+          <div className="grid gap-4 sm:grid-cols-2">
+            {homePage.industries.items.map((item, index) => {
+              const Icon = industryIcons[index] ?? Store;
 
               return (
                 <article
-                  key={channel.title}
-                  className="rounded-md border border-border bg-raised p-5 shadow-card"
+                  key={item.title}
+                  className="rounded-md border border-border bg-canvas p-6 shadow-card"
                 >
                   <span className="grid size-10 place-items-center rounded-md bg-blue-soft text-blue">
                     <Icon aria-hidden="true" className="size-5" />
                   </span>
-                  <h3 className="mt-5 text-body font-black">{channel.title}</h3>
-                  <p className="mt-2 text-body-sm leading-6 text-muted">
-                    {channel.body}
+                  <h3 className="mt-5 text-title-sm font-black leading-tight">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-body-sm leading-6 text-muted">
+                    {item.body}
                   </p>
                 </article>
               );
@@ -265,16 +274,16 @@ export function MarketingPage({ locale = "en" }: MarketingPageProps) {
                 {cta.requestDemo}
               </ButtonLink>
               <ButtonLink
-                href="/#channels"
+                href="/#demo"
                 tone="ghost"
                 size="lg"
                 className="w-full border border-white/15 text-canvas hover:bg-white/10 sm:w-auto"
-                icon={MessagesSquare}
+                icon={ShieldCheck}
                 analyticsEvent={marketingEvents.ctaClick}
-                analyticsLabel="See supported channels"
+                analyticsLabel="Review preview workflow"
                 analyticsLocation="home_final_cta"
               >
-                See supported channels
+                Review preview workflow
               </ButtonLink>
             </div>
           </div>

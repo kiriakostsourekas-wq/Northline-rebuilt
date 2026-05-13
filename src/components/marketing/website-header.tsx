@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { BrandMark } from "@/components/marketing/brand-mark";
 import { ButtonLink } from "@/components/ui/button-link";
 import { marketingEvents } from "@/lib/marketing-events";
-import { siteConfig, cta } from "@/content/website";
+import { cta, siteConfig } from "@/content/website";
 
 export function WebsiteHeader() {
   return (
@@ -22,20 +22,10 @@ export function WebsiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <ButtonLink
-            href="/#product"
-            tone="secondary"
-            size="sm"
-            className="hidden sm:inline-flex"
-            analyticsEvent={marketingEvents.ctaClick}
-            analyticsLabel={cta.seeProduct}
-            analyticsLocation="header"
-          >
-            {cta.seeProduct}
-          </ButtonLink>
-          <ButtonLink
             href="/contact?intent=demo"
             icon={ArrowRight}
             size="sm"
+            className="hidden sm:inline-flex"
             analyticsEvent={marketingEvents.ctaClick}
             analyticsLabel={cta.requestDemo}
             analyticsLocation="header"
