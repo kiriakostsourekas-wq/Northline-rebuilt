@@ -205,6 +205,11 @@ function ConversationDetail({
 
       <div className="overflow-hidden p-5">
         <QualificationSnapshot conversation={conversation} />
+        <NextActionPanel
+          conversation={conversation}
+          aiPaused={aiPaused}
+          handoffReason={activeHandoff?.reason}
+        />
         <OperatorModePanel
           conversation={conversation}
           operators={operators}
@@ -454,6 +459,106 @@ function QualificationSnapshot({
   );
 }
 
+function NextActionPanel({
+  conversation,
+  aiPaused,
+  handoffReason,
+}: {
+  conversation: InboxConversationDetail;
+  aiPaused: boolean;
+  handoffReason?: string;
+}) {
+  const lead = conversation.lead;
+  const nextAction = resolveNextAction({ conversation, aiPaused, handoffReason });
+
+  return (
+    <section className="mb-5 grid gap-4 rounded-lg border border-border bg-raised p-4 lg:grid-cols-[1fr_280px]">
+      <div>
+        <p className="text-caption font-black uppercase text-muted">
+          Recommended next action
+        </p>
+        <h3 className="mt-2 text-body font-black text-ink">
+          {nextAction.title}
+        </h3>
+        <p className="mt-2 text-body-sm leading-6 text-muted">
+          {nextAction.body}
+        </p>
+      </div>
+      <div className="grid gap-2 rounded-md border border-border bg-canvas p-3 text-caption">
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-black uppercase text-muted">Lead status</span>
+          <span className="font-mono font-black text-ink">
+            {lead?.status.replaceAll("_", " ").toLowerCase() ?? "unknown"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-black uppercase text-muted">AI state</span>
+          <span className="font-mono font-black text-ink">
+            {aiPaused ? "paused" : "active"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-black uppercase text-muted">Booking intent</span>
+          <span className="font-mono font-black text-ink">
+            {lead?.bookingIntent ? "yes" : "not yet"}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function resolveNextAction({
+  conversation,
+  aiPaused,
+  handoffReason,
+}: {
+  conversation: InboxConversationDetail;
+  aiPaused: boolean;
+  handoffReason?: string;
+}) {
+  const lead = conversation.lead;
+  if (handoffReason || aiPaused) {
+    return {
+      title: "Operator should reply with handoff context.",
+      body:
+        handoffReason ??
+        conversation.aiPauseReason ??
+        "AI is paused. Review the summary and send a human response before resuming automation.",
+    };
+  }
+
+  if (lead?.bookingIntent || lead?.status === "SALES_READY") {
+    return {
+      title: "Offer booking times.",
+      body:
+        "The lead has enough context for a booking path. Northline can suggest local mock slots or the operator can reply manually.",
+    };
+  }
+
+  if (conversation.status === "WAITING_ON_LEAD") {
+    return {
+      title: "Wait for the visitor to answer.",
+      body:
+        "The assistant has asked for the next missing detail. Keep the thread open and review the next inbound response.",
+    };
+  }
+
+  if (!lead) {
+    return {
+      title: "Capture the first visitor message.",
+      body:
+        "Use the website-chat simulator or signed API endpoint to create a lead-backed conversation.",
+    };
+  }
+
+  return {
+    title: "Continue qualification.",
+    body:
+      "Collect the missing contact, service, urgency, or language details until the lead can be booked or handed off.",
+  };
+}
+
 function StatusButton({
   value,
   children,
@@ -500,6 +605,22 @@ function WebsiteChatSimulator() {
           type="email"
           placeholder="lead@example.com"
           className="min-h-10 rounded-md border border-border bg-canvas px-3 text-body-sm text-ink outline-none focus:border-teal"
+        />
+        <input
+          name="phone"
+          placeholder="+30 phone number"
+          className="min-h-10 rounded-md border border-border bg-canvas px-3 text-body-sm text-ink outline-none focus:border-teal"
+        />
+        <input
+          name="threadId"
+          defaultValue="preview-website-thread"
+          aria-label="Thread id"
+          className="min-h-10 rounded-md border border-border bg-canvas px-3 font-mono text-caption text-ink outline-none focus:border-teal"
+        />
+        <input
+          type="hidden"
+          name="visitorId"
+          value="preview-website-visitor"
         />
         <textarea
           name="message"

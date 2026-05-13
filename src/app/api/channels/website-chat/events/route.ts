@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { websiteChatAdapter } from "@/lib/channels/adapters/website-chat";
 import { ingestInboundEvent } from "@/lib/channels/service";
+import type { IngestionResult } from "@/lib/channels/service";
 import { createPrismaChannelRepository } from "@/server/channels/prisma-channel-repository";
 import { runConversationEngineForInbound } from "@/server/conversation-engine/service";
 import { getPrismaClient } from "@/server/db";
@@ -10,6 +11,7 @@ import {
   rateLimitHeaders,
 } from "@/lib/security/request";
 import { safeErrorMessage } from "@/lib/security/logging";
+import type { ConversationEngineDecision } from "@/lib/conversation-engine/types";
 
 export const dynamic = "force-dynamic";
 
@@ -98,17 +100,28 @@ export async function POST(request: NextRequest) {
     websiteChatAdapter,
     event,
   );
+  let assistant: WebsiteChatAssistantResult | null = null;
   if (result.status === "processed") {
-    await processAssistantReply({
+    assistant = await processAssistantReply({
       organizationId,
       conversationId: result.conversationId,
     });
   }
 
-  return Response.json(result, {
-    status: result.status === "duplicate" ? 200 : 202,
-    headers: rateLimitHeaders(rateLimit),
-  });
+  return Response.json(
+    buildWebsiteChatResponseBody(result, assistant),
+    {
+      status: result.status === "duplicate" ? 200 : 202,
+      headers: rateLimitHeaders(rateLimit),
+    },
+  );
+}
+
+export function buildWebsiteChatResponseBody(
+  result: IngestionResult,
+  assistant: WebsiteChatAssistantResult | null,
+) {
+  return result.status === "processed" ? { ...result, assistant } : result;
 }
 
 async function resolveOrganizationId(payload: Record<string, unknown>) {
@@ -131,16 +144,38 @@ function getString(payload: Record<string, unknown>, key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+type WebsiteChatAssistantResult = {
+  reply: string;
+  locale: "EN" | "EL";
+  leadStatus: ConversationEngineDecision["leadStatus"];
+  missingFields: ConversationEngineDecision["missingFields"];
+  shouldEscalate: boolean;
+};
+
+export function toWebsiteChatAssistantResult(
+  decision: ConversationEngineDecision,
+): WebsiteChatAssistantResult {
+  return {
+    reply: decision.reply,
+    locale: decision.replyLocale,
+    leadStatus: decision.leadStatus,
+    missingFields: decision.missingFields,
+    shouldEscalate: decision.shouldEscalate,
+  };
+}
+
 async function processAssistantReply(input: {
   organizationId: string;
   conversationId: string;
-}) {
+}): Promise<WebsiteChatAssistantResult | null> {
   try {
-    await runConversationEngineForInbound(input);
+    const decision = await runConversationEngineForInbound(input);
+    return decision ? toWebsiteChatAssistantResult(decision) : null;
   } catch (error) {
     console.error("northline.conversation_engine.failed", {
       conversationId: input.conversationId,
       error: safeErrorMessage(error),
     });
+    return null;
   }
 }

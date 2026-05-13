@@ -32,8 +32,14 @@ export async function simulateWebsiteChatMessage(formData: FormData) {
   const name = getOptional(formData, "name") ?? "Website visitor";
   const email = getOptional(formData, "email");
   const phone = getOptional(formData, "phone");
-  const visitorId = email ?? phone ?? `visitor-${randomUUID()}`;
-  const threadId = getOptional(formData, "threadId") ?? `web-${visitorId}`;
+  const providedThreadId = getOptional(formData, "threadId");
+  const visitorId =
+    getOptional(formData, "visitorId") ??
+    email ??
+    phone ??
+    providedThreadId ??
+    `visitor-${randomUUID()}`;
+  const threadId = providedThreadId ?? `web-${visitorId}`;
   const messageId = `msg-${randomUUID()}`;
   const payload = {
     organizationId: organization.id,
