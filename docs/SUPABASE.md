@@ -57,6 +57,31 @@ queries, and audit logs. If a future task adds direct browser access through
 Supabase APIs, enable Row Level Security and write tenant-scoped policies before
 shipping that surface.
 
+## Data API Exposure
+
+Supabase is changing public-schema defaults in 2026 so new `public` tables are
+not automatically reachable through PostgREST, GraphQL, or `supabase-js`
+without explicit grants. Northline should not rely on those implicit grants.
+
+The current rebuild intentionally keeps app tables server-only:
+
+- Prisma connects through `DATABASE_URL` and `DIRECT_URL`.
+- Browser code must not query Northline app tables through Supabase Data API.
+- `NEXT_PUBLIC_SUPABASE_*` values are project metadata only unless a future
+  feature explicitly introduces Supabase client access.
+- Application tables revoke `anon`, `authenticated`, and `service_role` table
+  privileges and enable RLS as a defense-in-depth default.
+
+If a future feature needs Data API access, add a focused migration for only that
+surface:
+
+1. Grant the minimum table privileges to the exact Supabase role.
+2. Keep RLS enabled.
+3. Add tenant-scoped policies before exposing the table to browser or client
+   library traffic.
+4. Add tests or a manual Security Advisor check proving unrelated tables remain
+   closed.
+
 ## Operational Notes
 
 - Do not run migrations against any existing live Northline database.
